@@ -1,4 +1,4 @@
-# Secrets : seul .env.example est commité
+# Secrets: only .env.example is committed
 .env
 .env.*
 !.env.example
@@ -22,7 +22,7 @@ next-env.d.ts
 npm-debug.log*
 pnpm-debug.log*
 
-# Éditeurs / OS
+# Editors / OS
 .DS_Store
 .idea/
 .vscode/
