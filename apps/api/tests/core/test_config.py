@@ -10,6 +10,7 @@ def make_settings(monkeypatch: pytest.MonkeyPatch) -> Settings:
     monkeypatch.setenv("POSTGRES_DB", "postulo")
     monkeypatch.setenv("POSTGRES_HOST", "db")
     monkeypatch.setenv("POSTGRES_PORT", "6543")
+    monkeypatch.setenv("JWT_SECRET_KEY", "x" * 32)
     # _env_file=None: ignore the local .env so the test only sees the values above
     return Settings(_env_file=None)
 

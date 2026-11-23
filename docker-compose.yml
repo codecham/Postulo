@@ -26,6 +26,7 @@ services:
       POSTGRES_HOST: db
       # Port inside the Compose network (POSTGRES_PORT in .env is the port on your Mac)
       POSTGRES_PORT: 5432
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:

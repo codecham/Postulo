@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     postgres_db: str
     postgres_host: str = "localhost"
     postgres_port: int = 5432
+
+    # At least 32 characters: shorter HMAC keys can be brute-forced
+    jwt_secret_key: SecretStr = Field(min_length=32)
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
 
     @property
     def database_url(self) -> str:
