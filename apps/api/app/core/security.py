@@ -25,5 +25,22 @@ def create_access_token(subject: str) -> str:
     expires_at = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
     payload = {"sub": subject, "exp": expires_at}
     return jwt.encode(
-        payload, settings.jwt_secret_key.get_secret_value(), algorithm=settings.jwt_algorithm
+        payload,
+        settings.jwt_secret_key.get_secret_value(),
+        algorithm=settings.jwt_algorithm,
     )
+
+
+def decode_access_token(token: str) -> str | None:
+    """Return the subject (user id) of a valid token, or None if it is invalid or expired."""
+    settings = get_settings()
+    try:
+        payload = jwt.decode(
+            token,
+            settings.jwt_secret_key.get_secret_value(),
+            algorithms=[settings.jwt_algorithm],
+        )
+    except jwt.InvalidTokenError:  # bad signature, expired, malformed…
+        return None
+    subject = payload.get("sub")
+    return subject if isinstance(subject, str) else None
