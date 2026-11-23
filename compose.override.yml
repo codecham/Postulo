@@ -7,3 +7,8 @@ services:
     volumes:
       # Mount only the source code, not .venv or caches
       - ./apps/api/app:/code/app
+
+  migrate:
+    volumes:
+      # New migration files are picked up without rebuilding the image
+      - ./apps/api/migrations:/code/migrations

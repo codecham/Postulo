@@ -11,6 +11,10 @@ RUN useradd --create-home appuser
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
+# Database migrations, run by the "migrate" service in Docker Compose
+COPY alembic.ini ./
+COPY migrations ./migrations
+
 # Application code last: it changes most often
 COPY app ./app
 
