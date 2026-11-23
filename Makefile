@@ -1,4 +1,4 @@
-.PHONY: help up down logs test check migration migrate rollback db-status db-shell
+.PHONY: help up down logs test check migration migrate rollback db-status db-shell web-dev web-check
 .DEFAULT_GOAL := help
 
 API := apps/api
@@ -20,8 +20,9 @@ logs: ## Follow the API logs
 test: ## Run the tests
 	cd $(API) && uv run pytest
 
-check: ## Run tests, type checks and lint (before each commit)
+check: ## Run all checks: API (tests, types, lint) and web (before each commit)
 	cd $(API) && uv run pytest && uv run mypy app tests && uv run ruff check .
+	$(MAKE) web-check
 
 # --- Database ---
 migration: ## Create a migration: make migration m="add avatar to users"
@@ -39,3 +40,10 @@ db-status: ## Show the current migration and the history
 
 db-shell: ## Open a psql console on the database
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
+
+# --- Web ---
+web-dev: ## Start the Next.js dev server on http://localhost:3000
+	cd apps/web && npm run dev
+
+web-check: ## Lint, type check and format check the frontend
+	cd apps/web && npm run lint && npm run typecheck && npm run format:check

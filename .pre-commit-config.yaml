@@ -55,7 +55,7 @@ repos:
       # Web: TypeScript check (slow, so it runs on push)
       - id: tsc
         name: tsc (web)
-        entry: bash -c 'cd apps/web && npx tsc --noEmit'
+        entry: bash -c 'cd apps/web && npm run typecheck'
         language: system
         files: ^apps/web/.*\.(ts|tsx)$
         pass_filenames: false
