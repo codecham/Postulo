@@ -13,13 +13,13 @@ from tests.fakes import make_extraction, make_pdf
 
 
 class FakeAnthropicClient:
-    """Mimics `client.beta.messages.parse(...)`: returns `response` or raises `error`."""
+    """Mimics `client.messages.parse(...)`: returns `response` or raises `error`."""
 
     def __init__(self, response: Any = None, error: Exception | None = None) -> None:
         self.requests: list[dict[str, Any]] = []
         self._response = response
         self._error = error
-        self.beta = SimpleNamespace(messages=SimpleNamespace(parse=self._parse))
+        self.messages = SimpleNamespace(parse=self._parse)
 
     def _parse(self, **request: Any) -> Any:
         self.requests.append(request)

@@ -3,8 +3,8 @@
 import base64
 
 import anthropic
-from anthropic.types.beta import BetaContentBlockParam
-from anthropic.types.beta.parsed_beta_message import ParsedBetaMessage
+from anthropic.types import ContentBlockParam
+from anthropic.types.parsed_message import ParsedMessage
 from pydantic import ValidationError
 
 from app.services.cv_import.errors import ExtractionFailedError
@@ -13,8 +13,6 @@ from app.services.cv_import.prompt import SYSTEM_PROMPT, USER_PROMPT
 
 # A CV rarely needs more than a few thousand tokens of output
 MAX_OUTPUT_TOKENS = 16000
-# If the model declines, the API retries on another model in the same call
-FALLBACK_BETA = "server-side-fallback-2026-07-01"
 
 
 class ClaudeCvExtractor:
@@ -25,7 +23,7 @@ class ClaudeCvExtractor:
     def extract(self, pdf: bytes) -> ExtractionResult:
         response = self._call_claude(pdf)
         if response.stop_reason != "end_turn" or response.parsed_output is None:
-            # "refusal", or "max_tokens": the JSON was cut, so it is unusable
+            # "refusal": the model declined; "max_tokens": the JSON was cut off
             raise ExtractionFailedError(f"Unusable answer (stop reason: {response.stop_reason})")
         return ExtractionResult(
             extraction=response.parsed_output,
@@ -34,15 +32,13 @@ class ClaudeCvExtractor:
             output_tokens=response.usage.output_tokens,
         )
 
-    def _call_claude(self, pdf: bytes) -> ParsedBetaMessage[CvExtraction]:
+    def _call_claude(self, pdf: bytes) -> ParsedMessage[CvExtraction]:
         try:
-            return self._client.beta.messages.parse(
+            return self._client.messages.parse(
                 model=self._model,
                 max_tokens=MAX_OUTPUT_TOKENS,
                 # Extraction needs little reasoning: low effort is faster and cheaper
                 output_config={"effort": "low"},
-                betas=[FALLBACK_BETA],
-                fallbacks="default",
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": _document_with_instructions(pdf)}],
                 output_format=CvExtraction,
@@ -53,7 +49,7 @@ class ClaudeCvExtractor:
             raise ExtractionFailedError("The answer does not match the schema") from error
 
 
-def _document_with_instructions(pdf: bytes) -> list[BetaContentBlockParam]:
+def _document_with_instructions(pdf: bytes) -> list[ContentBlockParam]:
     return [
         {
             "type": "document",
