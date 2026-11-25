@@ -398,10 +398,225 @@ export interface paths {
     patch: operations["update_match_job_search_matches__match_id__patch"];
     trace?: never;
   };
+  "/applications/options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Application Options
+     * @description Tell the client which ways to write an application work, to offer the right one.
+     */
+    get: operations["read_application_options_applications_options_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}/application": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read Application */
+    get: operations["read_application_job_search_matches__match_id__application_get"];
+    /**
+     * Update Application
+     * @description Save the documents as the user reviewed them.
+     */
+    put: operations["update_application_job_search_matches__match_id__application_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}/application/generate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Generate Application
+     * @description Write a CV and a cover letter tailored to the offer, in the offer's language.
+     *
+     *     It becomes the match's current application; the previous one is kept as history.
+     */
+    post: operations["generate_application_job_search_matches__match_id__application_generate_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}/application/from-claude-code": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Create Application From Claude Code
+     * @description Save an application written in Claude Code (`/tailor-application` command).
+     *
+     *     Free: it used the user's own Claude plan, the API calls no AI.
+     */
+    post: operations["create_application_from_claude_code_job_search_matches__match_id__application_from_claude_code_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}/application/cv.pdf": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Download Cv */
+    get: operations["download_cv_job_search_matches__match_id__application_cv_pdf_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}/application/cover-letter.pdf": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Download Cover Letter */
+    get: operations["download_cover_letter_job_search_matches__match_id__application_cover_letter_pdf_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tracking": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Board
+     * @description Every sent application, the most recent first, with the count of each status.
+     */
+    get: operations["read_board_tracking_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}/tracking": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read Tracking */
+    get: operations["read_tracking_job_search_matches__match_id__tracking_get"];
+    put?: never;
+    /**
+     * Mark As Sent
+     * @description Mark the application as sent: it moves to the tracking board.
+     */
+    post: operations["mark_as_sent_job_search_matches__match_id__tracking_post"];
+    /** Undo Mark As Sent */
+    delete: operations["undo_mark_as_sent_job_search_matches__match_id__tracking_delete"];
+    options?: never;
+    head?: never;
+    /**
+     * Update Tracking
+     * @description Change the status, the dates or the notes. A new status is added to the history.
+     */
+    patch: operations["update_tracking_job_search_matches__match_id__tracking_patch"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * ApplicationContent
+     * @description The documents as stored and edited. Body of PUT .../application.
+     */
+    ApplicationContent: {
+      cv: components["schemas"]["TailoredCv"];
+      cover_letter: components["schemas"]["CoverLetter"];
+      language: components["schemas"]["ApplicationLanguage"];
+      contact: components["schemas"]["Contact"];
+    };
+    /**
+     * ApplicationLanguage
+     * @description The languages the documents can be written in (labels, dates, AI wording).
+     * @enum {string}
+     */
+    ApplicationLanguage: "fr" | "en";
+    /**
+     * ApplicationOptions
+     * @description Which ways to write an application this server offers.
+     */
+    ApplicationOptions: {
+      /** Ai Generation */
+      ai_generation: boolean;
+    };
+    /** ApplicationRead */
+    ApplicationRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Match Id
+       * Format: uuid
+       */
+      match_id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Model */
+      model: string;
+      content: components["schemas"]["ApplicationContent"];
+    };
     /** Body_login_auth_login_post */
     Body_login_auth_login_post: {
       /** Grant Type */
@@ -430,6 +645,101 @@ export interface components {
     Body_start_import_profile_imports_post: {
       /** File */
       file: string;
+    };
+    /**
+     * Contact
+     * @description The header of both documents, filled from the profile and editable.
+     */
+    Contact: {
+      /** Full Name */
+      full_name?: string | null;
+      /** Email */
+      email?: string | null;
+      /** Phone */
+      phone?: string | null;
+      /** City */
+      city?: string | null;
+      /**
+       * Links
+       * @default []
+       */
+      links?: string[];
+    };
+    /** CoverLetter */
+    CoverLetter: {
+      /**
+       * Subject
+       * @description Subject line naming the job title
+       */
+      subject: string;
+      /**
+       * Greeting
+       * @description Such as 'Dear Hiring Manager,' or 'Madame, Monsieur,'
+       */
+      greeting: string;
+      /**
+       * Paragraphs
+       * @description 3 or 4 short paragraphs: the hook, the fit with concrete proof from the profile, the motivation for this company, the call to action
+       */
+      paragraphs: string[];
+      /**
+       * Closing
+       * @description Closing formula, without the signature
+       */
+      closing: string;
+    };
+    /** CvEducation */
+    CvEducation: {
+      /** School */
+      school: string;
+      /**
+       * Degree
+       * @description Degree or diploma, or null
+       */
+      degree: string | null;
+      /** Field Of Study */
+      field_of_study: string | null;
+      /** Location */
+      location: string | null;
+      /** Start Month */
+      start_month: string | null;
+      /** End Month */
+      end_month: string | null;
+      /**
+       * Details
+       * @description One short line, only if relevant, or null
+       */
+      details: string | null;
+    };
+    /** CvExperience */
+    CvExperience: {
+      /**
+       * Title
+       * @description Job title, as in the candidate's profile
+       */
+      title: string;
+      /** Company */
+      company: string;
+      /**
+       * Location
+       * @description City and/or country, or null
+       */
+      location: string | null;
+      /**
+       * Start Month
+       * @description YYYY-MM, as in the profile, or null
+       */
+      start_month: string | null;
+      /**
+       * End Month
+       * @description YYYY-MM, or null for a current job
+       */
+      end_month: string | null;
+      /**
+       * Bullets
+       * @description 2 to 5 achievements or responsibilities, the most relevant to the offer first, each one sentence starting with a verb
+       */
+      bullets: string[];
     };
     /** CvExtraction */
     CvExtraction: {
@@ -807,6 +1117,14 @@ export interface components {
        */
       description: string | null;
     };
+    /**
+     * GeneratedApplication
+     * @description What the AI writes for one offer.
+     */
+    GeneratedApplication: {
+      cv: components["schemas"]["TailoredCv"];
+      cover_letter: components["schemas"]["CoverLetter"];
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -1066,6 +1384,39 @@ export interface components {
        */
       offer_languages?: string[];
     };
+    /** TailoredCv */
+    TailoredCv: {
+      /**
+       * Headline
+       * @description Professional title aimed at the offer
+       */
+      headline: string;
+      /**
+       * Summary
+       * @description 3 or 4 sentences: who the candidate is and why they fit this offer
+       */
+      summary: string;
+      /**
+       * Skills
+       * @description The candidate's skills, those the offer asks for first; at most 15
+       */
+      skills: string[];
+      /**
+       * Experiences
+       * @description Every experience of the profile, newest first
+       */
+      experiences: components["schemas"]["CvExperience"][];
+      /**
+       * Education
+       * @description Every education of the profile, newest first
+       */
+      education: components["schemas"]["CvEducation"][];
+      /**
+       * Languages
+       * @description Spoken languages written out in the document language, such as 'English' or 'Français'
+       */
+      languages: string[];
+    };
     /**
      * Token
      * @description Returned after a successful login (OAuth2 access token response).
@@ -1081,6 +1432,122 @@ export interface components {
       token_type?: "bearer";
       /** Expires In */
       expires_in: number;
+    };
+    /**
+     * TrackedApplicationRead
+     * @description A tracked application with its offer, for the tracking board.
+     */
+    TrackedApplicationRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Match Id
+       * Format: uuid
+       */
+      match_id: string;
+      status: components["schemas"]["TrackingStatus"];
+      /**
+       * Applied On
+       * Format: date
+       */
+      applied_on: string;
+      /** Follow Up On */
+      follow_up_on: string | null;
+      /** Notes */
+      notes: string | null;
+      /** Follow Up Due */
+      follow_up_due: boolean;
+      /** Events */
+      events: components["schemas"]["TrackingEventRead"][];
+      offer: components["schemas"]["JobOfferRead"];
+    };
+    /** TrackingBoard */
+    TrackingBoard: {
+      /** Items */
+      items: components["schemas"]["TrackedApplicationRead"][];
+      counts: components["schemas"]["TrackingCounts"];
+    };
+    /** TrackingCounts */
+    TrackingCounts: {
+      /** Applied */
+      applied: number;
+      /** Interview */
+      interview: number;
+      /** Offer */
+      offer: number;
+      /** Rejected */
+      rejected: number;
+      /** Withdrawn */
+      withdrawn: number;
+    };
+    /**
+     * TrackingCreate
+     * @description Body of POST .../tracking ("Mark as sent"). Every field has a default.
+     */
+    TrackingCreate: {
+      /** Applied On */
+      applied_on?: string | null;
+      /** Follow Up On */
+      follow_up_on?: string | null;
+    };
+    /** TrackingEventRead */
+    TrackingEventRead: {
+      status: components["schemas"]["TrackingStatus"];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** TrackingRead */
+    TrackingRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Match Id
+       * Format: uuid
+       */
+      match_id: string;
+      status: components["schemas"]["TrackingStatus"];
+      /**
+       * Applied On
+       * Format: date
+       */
+      applied_on: string;
+      /** Follow Up On */
+      follow_up_on: string | null;
+      /** Notes */
+      notes: string | null;
+      /** Follow Up Due */
+      follow_up_due: boolean;
+      /** Events */
+      events: components["schemas"]["TrackingEventRead"][];
+    };
+    /**
+     * TrackingStatus
+     * @description Where a sent application stands.
+     * @enum {string}
+     */
+    TrackingStatus:
+      "applied" | "interview" | "offer" | "rejected" | "withdrawn";
+    /**
+     * TrackingUpdate
+     * @description Body of PATCH .../tracking: only the fields sent are changed.
+     */
+    TrackingUpdate: {
+      status?: components["schemas"]["TrackingStatus"] | null;
+      /** Applied On */
+      applied_on?: string | null;
+      /** Follow Up On */
+      follow_up_on?: string | null;
+      /** Notes */
+      notes?: string | null;
     };
     /**
      * UserCreate
@@ -2040,6 +2507,464 @@ export interface operations {
         };
       };
       /** @description No such match */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  read_application_options_applications_options_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApplicationOptions"];
+        };
+      };
+    };
+  };
+  read_application_job_search_matches__match_id__application_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApplicationRead"];
+        };
+      };
+      /** @description No application yet */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_application_job_search_matches__match_id__application_put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ApplicationContent"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApplicationRead"];
+        };
+      };
+      /** @description No application yet */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  generate_application_job_search_matches__match_id__application_generate_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApplicationRead"];
+        };
+      };
+      /** @description Match not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Your profile is empty: add your experience or skills first */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Too many generations in the last hour, try again later */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Writing the application failed, try again later */
+      502: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description AI generation is not configured */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  create_application_from_claude_code_job_search_matches__match_id__application_from_claude_code_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GeneratedApplication"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApplicationRead"];
+        };
+      };
+      /** @description Match not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Your profile is empty: add your experience or skills first */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  download_cv_job_search_matches__match_id__application_cv_pdf_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The PDF file */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/pdf": unknown;
+        };
+      };
+      /** @description No application yet */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  download_cover_letter_job_search_matches__match_id__application_cover_letter_pdf_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The PDF file */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/pdf": unknown;
+        };
+      };
+      /** @description No application yet */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  read_board_tracking_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingBoard"];
+        };
+      };
+    };
+  };
+  read_tracking_job_search_matches__match_id__tracking_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingRead"];
+        };
+      };
+      /** @description No such match, or not marked as sent */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  mark_as_sent_job_search_matches__match_id__tracking_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TrackingCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingRead"];
+        };
+      };
+      /** @description No such match, or not marked as sent */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Already marked as sent */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  undo_mark_as_sent_job_search_matches__match_id__tracking_delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No such match, or not marked as sent */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_tracking_job_search_matches__match_id__tracking_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TrackingUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingRead"];
+        };
+      };
+      /** @description No such match, or not marked as sent */
       404: {
         headers: {
           [name: string]: unknown;

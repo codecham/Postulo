@@ -1,8 +1,8 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.models import MatchStatus
+from app.models import MatchStatus, TrackedApplication, TrackingStatus
 from app.services.job_search import dashboard
 from app.services.job_search.matching import match_offers, nearest_offers
 from app.services.job_search.offers import embed_pending_offers, save_offers
@@ -95,6 +95,22 @@ def test_saved_matches_stay_when_they_no_longer_fit(db: Session) -> None:
     match_offers(db, user.id, make_criteria(), profile_vector(), min_score=0)
     [match] = matches_of(db, user.id)
     dashboard.set_status(db, user.id, match.id, MatchStatus.SAVED)
+
+    match_offers(db, user.id, make_criteria(offer_languages=("nl",)), profile_vector(), 0)
+
+    assert [item.id for item in matches_of(db, user.id)] == [match.id]
+
+
+def test_a_new_match_marked_as_sent_stays_when_it_no_longer_fits(db: Session) -> None:
+    user = create_user(db)
+    save_embedded(db, make_collected_offer(title="Python developer FastAPI backend API"))
+    match_offers(db, user.id, make_criteria(), profile_vector(), min_score=0)
+    [match] = matches_of(db, user.id)
+    tracking = TrackedApplication(
+        user_id=user.id, match_id=match.id, status=TrackingStatus.APPLIED, applied_on=date.today()
+    )
+    db.add(tracking)
+    db.commit()
 
     match_offers(db, user.id, make_criteria(offer_languages=("nl",)), profile_vector(), 0)
 

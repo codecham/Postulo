@@ -19,8 +19,15 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.main import app
+from app.routes.applications import get_application_writer
 from app.routes.cv_imports import get_cv_extractor
-from tests.fakes import FakeCvExtractor, FakeSession, make_extraction
+from tests.fakes import (
+    FakeApplicationWriter,
+    FakeCvExtractor,
+    FakeSession,
+    make_extraction,
+    make_generated_application,
+)
 
 settings = get_settings()
 TEST_DB_NAME = f"{settings.postgres_db}_test"
@@ -124,3 +131,11 @@ def fake_extractor() -> FakeCvExtractor:
     extractor = FakeCvExtractor(make_extraction())
     app.dependency_overrides[get_cv_extractor] = lambda: extractor
     return extractor
+
+
+@pytest.fixture
+def fake_writer() -> FakeApplicationWriter:
+    """Replace Claude with a fake application writer: tests never call the paid API."""
+    writer = FakeApplicationWriter(make_generated_application())
+    app.dependency_overrides[get_application_writer] = lambda: writer
+    return writer

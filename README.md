@@ -111,6 +111,7 @@ This project is ready for [Claude Code](https://claude.com/claude-code):
 - [CLAUDE.md](CLAUDE.md) explains the architecture, commands and conventions, so Claude follows the project's patterns from the first prompt.
 - [.claude/settings.json](.claude/settings.json) pre-approves the safe project commands (`make check`, `uv run ...`, `npm run ...`) and blocks reading `.env`.
 - [.claude/skills/](.claude/skills/) contains step-by-step skills, for example `add-feature` to add a resource end to end (model, migration, API, tests, typed client, page).
+- The AI features also work for free with your Claude plan, without an API key: `/import-cv <pdf>` fills the profile from a CV, and `/tailor-application <match id>` writes a CV and a cover letter for one offer (the offer's Apply panel shows the exact command). Both copy a JSON result that you paste into the app.
 
 Try: *"Add a notes feature: users can create, list and delete their own notes."*
 
