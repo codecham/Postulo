@@ -1,3 +1,4 @@
+from app.models.application import Application
 from app.models.base import Base
 from app.models.cv_import import CvImport, CvImportStatus
 from app.models.education import Education
@@ -10,6 +11,7 @@ from app.models.user import User
 
 __all__ = [
     "EMBEDDING_DIMENSIONS",
+    "Application",
     "Base",
     "CvImport",
     "CvImportStatus",

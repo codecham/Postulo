@@ -12,6 +12,10 @@ from pypdf import PdfWriter
 from sqlalchemy.exc import OperationalError
 
 from app.models import EMBEDDING_DIMENSIONS
+from app.schemas.application import GeneratedApplication
+from app.services.applications.context import ApplicationContext
+from app.services.applications.errors import GenerationFailedError
+from app.services.applications.writing import WritingResult
 from app.services.cv_import.errors import ExtractionFailedError
 from app.services.cv_import.extraction import (
     CvExtraction,
@@ -167,3 +171,63 @@ class FakeEmbedder:
             vector[zlib.crc32(word.encode()) % EMBEDDING_DIMENSIONS] += 1.0
         norm = math.sqrt(sum(value * value for value in vector)) or 1.0
         return [value / norm for value in vector]
+
+
+class FakeApplicationWriter:
+    """Stands in for Claude: returns `application` without any network call.
+
+    Set `fail = True` to simulate an AI outage. `contexts` records what it was given.
+    """
+
+    def __init__(self, application: GeneratedApplication) -> None:
+        self.application = application
+        self.fail = False
+        self.contexts: list[ApplicationContext] = []
+
+    def write(self, context: ApplicationContext) -> WritingResult:
+        self.contexts.append(context)
+        if self.fail:
+            raise GenerationFailedError("simulated outage")
+        return WritingResult(
+            application=self.application, model="fake-model", input_tokens=3000, output_tokens=900
+        )
+
+
+def make_generated_application(**changes: Any) -> GeneratedApplication:
+    """A typical application written by the AI; keyword arguments replace whole parts."""
+    fields: dict[str, Any] = {
+        "cv": {
+            "headline": "Python backend developer",
+            "summary": "Backend developer with five years of Python.",
+            "skills": ["Python", "FastAPI"],
+            "experiences": [
+                {
+                    "title": "Developer",
+                    "company": "Acme",
+                    "location": "Brussels",
+                    "start_month": "2022-01",
+                    "end_month": None,
+                    "bullets": ["Built the billing API used by 200 customers."],
+                }
+            ],
+            "education": [
+                {
+                    "school": "42 Paris",
+                    "degree": "RNCP level 7",
+                    "field_of_study": "Software engineering",
+                    "location": "Paris",
+                    "start_month": "2019-09",
+                    "end_month": "2021-12",
+                    "details": None,
+                }
+            ],
+            "languages": ["French", "English"],
+        },
+        "cover_letter": {
+            "subject": "Application for the Python developer position",
+            "greeting": "Dear Hiring Manager,",
+            "paragraphs": ["I would like to join Acme.", "I built APIs like yours."],
+            "closing": "Kind regards,",
+        },
+    }
+    return GeneratedApplication.model_validate(fields | changes)

@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     # Each import costs money: limit how many a user can start per hour
     cv_imports_per_hour: int = Field(default=5, gt=0)
 
+    # Tailored CV and cover letter, written by Claude (same API key as the CV import)
+    application_model: str = "claude-haiku-5-5"
+    # Each AI generation costs money: limit how many a user can start per hour
+    applications_per_hour: int = Field(default=10, gt=0)
+
     # Job search worker
     # Free key from https://developer.adzuna.com: adds Belgian (and other) on-site offers.
     # Without it, the search only uses the job boards that need no key (remote jobs).
