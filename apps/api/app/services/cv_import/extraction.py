@@ -24,6 +24,18 @@ class ExtractedExperience(BaseModel):
     description: str | None = Field(description="Responsibilities and achievements")
 
 
+class ExtractedEducation(BaseModel):
+    school: str = Field(description="School, university or training organization")
+    degree: str | None = Field(description="Degree or diploma, such as 'Master' or 'RNCP level 7'")
+    field_of_study: str | None = Field(description="Field or program, such as 'Computer science'")
+    location: str | None
+    start_month: str | None = Field(description="Start month as YYYY-MM, or null if unknown")
+    end_month: str | None = Field(
+        description="End or graduation month as YYYY-MM, or null if ongoing or unknown"
+    )
+    description: str | None = Field(description="Projects, specialization, honors")
+
+
 class CvExtraction(BaseModel):
     is_cv: bool = Field(
         description="False if the document is not a CV, a resume or a professional profile"
@@ -49,6 +61,9 @@ class CvExtraction(BaseModel):
         description="True only if the CV says the person accepts remote work for a foreign company"
     )
     experiences: list[ExtractedExperience] = Field(description="Work experiences, newest first")
+    education: list[ExtractedEducation] = Field(
+        description="Schools, degrees and trainings (bootcamps, coding schools...), newest first"
+    )
 
 
 @dataclass(frozen=True)

@@ -7,7 +7,12 @@ from pypdf import PdfWriter
 from sqlalchemy.exc import OperationalError
 
 from app.services.cv_import.errors import ExtractionFailedError
-from app.services.cv_import.extraction import CvExtraction, ExtractedExperience, ExtractionResult
+from app.services.cv_import.extraction import (
+    CvExtraction,
+    ExtractedEducation,
+    ExtractedExperience,
+    ExtractionResult,
+)
 
 
 class FakeSession:
@@ -59,6 +64,7 @@ def make_extraction(**changes: Any) -> CvExtraction:
         "countries": ["BE"],
         "open_to_remote_abroad": False,
         "experiences": [make_extracted_experience()],
+        "education": [make_extracted_education()],
     }
     return CvExtraction.model_validate(fields | changes)
 
@@ -74,6 +80,19 @@ def make_extracted_experience(**changes: Any) -> ExtractedExperience:
         "description": "Built the billing API.",
     }
     return ExtractedExperience.model_validate(fields | changes)
+
+
+def make_extracted_education(**changes: Any) -> ExtractedEducation:
+    fields: dict[str, Any] = {
+        "school": "42 Paris",
+        "degree": "RNCP level 7",
+        "field_of_study": "Software engineering",
+        "location": "Paris",
+        "start_month": "2019-09",
+        "end_month": "2021-12",
+        "description": None,
+    }
+    return ExtractedEducation.model_validate(fields | changes)
 
 
 def make_pdf(pages: int = 1, password: str | None = None) -> bytes:

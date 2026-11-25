@@ -4,7 +4,12 @@ from typing import Self
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from app.schemas.fields import MediumText, OptionalLongText, OptionalShortText
+from app.schemas.fields import (
+    MediumText,
+    OptionalLongText,
+    OptionalShortText,
+    ensure_end_after_start,
+)
 
 
 class ExperienceCreate(BaseModel):
@@ -19,8 +24,7 @@ class ExperienceCreate(BaseModel):
 
     @model_validator(mode="after")
     def check_end_date_after_start_date(self) -> Self:
-        if self.end_date is not None and self.end_date < self.start_date:
-            raise ValueError("end_date must be on or after start_date")
+        ensure_end_after_start(self.start_date, self.end_date)
         return self
 
 
