@@ -346,7 +346,7 @@ export interface paths {
     };
     /**
      * List Matches
-     * @description The offers that fit the profile best.
+     * @description The user's matches with one status, filtered and ranked, plus the count of each tab.
      */
     get: operations["list_matches_job_search_matches_get"];
     put?: never;
@@ -355,6 +355,47 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/facets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Facets
+     * @description The values to offer in the filters: only those found in the user's matches.
+     */
+    get: operations["read_facets_job_search_matches_facets_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read Match */
+    get: operations["read_match_job_search_matches__match_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update Match
+     * @description Save the offer to the shortlist, dismiss it, or put it back to review.
+     */
+    patch: operations["update_match_job_search_matches__match_id__patch"];
     trace?: never;
   };
 }
@@ -779,6 +820,14 @@ export interface components {
        */
       status: "ok";
     };
+    /** JobMatchPage */
+    JobMatchPage: {
+      /** Items */
+      items: components["schemas"]["JobMatchRead"][];
+      /** Total */
+      total: number;
+      counts: components["schemas"]["MatchStatusCounts"];
+    };
     /** JobMatchRead */
     JobMatchRead: {
       /**
@@ -788,14 +837,18 @@ export interface components {
       id: string;
       /** Score */
       score: number;
-      /** Matched Skills */
-      matched_skills: string[];
+      status: components["schemas"]["MatchStatus"];
       /**
        * Created At
        * Format: date-time
        */
       created_at: string;
       offer: components["schemas"]["JobOfferRead"];
+      explanation: components["schemas"]["MatchExplanation"];
+    };
+    /** JobMatchUpdate */
+    JobMatchUpdate: {
+      status: components["schemas"]["MatchStatus"];
     };
     /** JobOfferRead */
     JobOfferRead: {
@@ -884,6 +937,55 @@ export interface components {
       url: string;
       /** Enabled */
       enabled: boolean;
+    };
+    /**
+     * MatchExplanation
+     * @description Why the offer was matched, in a few facts the page turns into sentences.
+     */
+    MatchExplanation: {
+      /** Relevance */
+      relevance: number;
+      /** Matched Skills */
+      matched_skills: string[];
+      place: components["schemas"]["MatchPlace"];
+    };
+    /**
+     * MatchFacets
+     * @description The values found in the user's matches, to offer as filters.
+     */
+    MatchFacets: {
+      /** Sources */
+      sources: string[];
+      /** Countries */
+      countries: string[];
+      /** Languages */
+      languages: string[];
+    };
+    /**
+     * MatchPlace
+     * @description Why the offer's place suits the user.
+     * @enum {string}
+     */
+    MatchPlace: "your_country" | "remote" | "other";
+    /**
+     * MatchSort
+     * @enum {string}
+     */
+    MatchSort: "score" | "date";
+    /**
+     * MatchStatus
+     * @description Where the match stands for the user. New searches never change it.
+     * @enum {string}
+     */
+    MatchStatus: "new" | "saved" | "dismissed";
+    /** MatchStatusCounts */
+    MatchStatusCounts: {
+      /** New */
+      new: number;
+      /** Saved */
+      saved: number;
+      /** Dismissed */
+      dismissed: number;
     };
     /** ProfileRead */
     ProfileRead: {
@@ -1818,7 +1920,16 @@ export interface operations {
   list_matches_job_search_matches_get: {
     parameters: {
       query?: {
+        status?: components["schemas"]["MatchStatus"];
+        min_score?: number;
+        work_mode?: components["schemas"]["WorkMode"][];
+        country?: string[];
+        language?: string[];
+        source?: string[];
+        max_age_days?: number | null;
+        sort?: components["schemas"]["MatchSort"];
         limit?: number;
+        offset?: number;
       };
       header?: never;
       path?: never;
@@ -1832,8 +1943,108 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["JobMatchRead"][];
+          "application/json": components["schemas"]["JobMatchPage"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  read_facets_job_search_matches_facets_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MatchFacets"];
+        };
+      };
+    };
+  };
+  read_match_job_search_matches__match_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JobMatchRead"];
+        };
+      };
+      /** @description No such match */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_match_job_search_matches__match_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["JobMatchUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JobMatchRead"];
+        };
+      };
+      /** @description No such match */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {
