@@ -192,7 +192,10 @@ def test_apply_saves_the_profile_and_the_experiences(
     assert response.status_code == 200
     assert response.json()["status"] == "applied"
     assert response.json()["draft"] is None  # personal data is not kept twice
-    assert client.get("/profile/me", headers=headers).json()["full_name"] == "Alice Martin"
+    profile = client.get("/profile/me", headers=headers).json()
+    assert profile["full_name"] == "Alice Martin"
+    assert profile["skills"] == ["Python", "PostgreSQL"]
+    assert profile["languages"] == ["fr", "en"]
     assert [item["company"] for item in client.get("/experiences", headers=headers).json()] == [
         "Acme"
     ]

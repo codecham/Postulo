@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
 import { ChipList } from "@/components/ui/chip-list";
 import {
   hintClassName,
   inputClassName,
   labelClassName,
 } from "@/components/ui/styles";
+import { useListState } from "@/components/ui/use-list-state";
 import type { Option } from "@/lib/forms";
 
 type MultiSelectProps = {
@@ -31,7 +30,7 @@ export function MultiSelect({
   placeholder = "Add…",
   hint,
 }: MultiSelectProps) {
-  const [selected, setSelected] = useState(defaultValue);
+  const [selected, setSelected] = useListState(defaultValue);
 
   const selectedOptions = selected.map(
     (value) =>
