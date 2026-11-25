@@ -19,7 +19,8 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.main import app
-from tests.fakes import FakeSession
+from app.routes.cv_imports import get_cv_extractor
+from tests.fakes import FakeCvExtractor, FakeSession, make_extraction
 
 settings = get_settings()
 TEST_DB_NAME = f"{settings.postgres_db}_test"
@@ -115,3 +116,11 @@ def login_as(client: TestClient, db: Session) -> LoginAs:
         return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
     return login
+
+
+@pytest.fixture
+def fake_extractor() -> FakeCvExtractor:
+    """Replace Claude with a fake extractor: tests never call the real (paid) API."""
+    extractor = FakeCvExtractor(make_extraction())
+    app.dependency_overrides[get_cv_extractor] = lambda: extractor
+    return extractor

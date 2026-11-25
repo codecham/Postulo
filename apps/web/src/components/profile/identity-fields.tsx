@@ -1,9 +1,9 @@
 import { FormSection } from "@/components/ui/form-section";
 import { TextareaField } from "@/components/ui/textarea-field";
 import { TextField } from "@/components/ui/text-field";
-import type { Profile } from "@/lib/profile/types";
+import type { ProfileValues } from "@/lib/profile/types";
 
-export function IdentityFields({ profile }: { profile: Profile }) {
+export function IdentityFields({ profile }: { profile: ProfileValues }) {
   return (
     <FormSection title="About you">
       <div className="grid gap-4 sm:grid-cols-2">

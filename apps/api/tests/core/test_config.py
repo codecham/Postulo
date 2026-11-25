@@ -51,3 +51,11 @@ def test_short_jwt_secret_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
 
     with pytest.raises(ValidationError):
         Settings(_env_file=None)
+
+
+def test_an_empty_anthropic_key_means_no_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+
+    settings = make_settings(monkeypatch)
+
+    assert settings.anthropic_api_key is None

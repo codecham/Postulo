@@ -14,6 +14,7 @@ import type { FormState } from "@/lib/forms";
 type ActionFormProps = {
   action: (state: FormState, formData: FormData) => Promise<FormState>;
   submitLabel: string;
+  pendingLabel?: string; // shown on the submit button while the action runs
   secondaryButton?: ReactNode; // e.g. a Cancel button, next to the submit button
   children: ReactNode; // the fields: they can be Server Components
 };
@@ -26,6 +27,7 @@ type ActionFormProps = {
 export function ActionForm({
   action,
   submitLabel,
+  pendingLabel,
   secondaryButton,
   children,
 }: ActionFormProps) {
@@ -43,7 +45,9 @@ export function ActionForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {children}
       <div className="flex flex-wrap items-center gap-4">
-        <SubmitButton pending={isPending}>{submitLabel}</SubmitButton>
+        <SubmitButton pending={isPending} pendingLabel={pendingLabel}>
+          {submitLabel}
+        </SubmitButton>
         {secondaryButton}
         <FormMessage state={state} />
       </div>

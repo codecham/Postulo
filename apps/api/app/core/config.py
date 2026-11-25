@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
@@ -40,6 +40,21 @@ class Settings(BaseSettings):
     # Browser origins allowed to call the API directly.
     # In .env, write it as JSON: CORS_ORIGINS=["http://localhost:3000"]
     cors_origins: list[str] = ["http://localhost:3000"]
+
+    # CV import with Claude. Without a key the app still starts: the import answers 503.
+    anthropic_api_key: SecretStr | None = None
+    # Haiku: about 0.1 cent per CV, accurate enough for this extraction
+    cv_import_model: str = "claude-haiku-5-5"
+    cv_import_max_bytes: int = Field(default=5 * 1024 * 1024, gt=0)
+    cv_import_max_pages: int = Field(default=10, gt=0)
+    # Each import costs money: limit how many a user can start per hour
+    cv_imports_per_hour: int = Field(default=5, gt=0)
+
+    @field_validator("anthropic_api_key", mode="before")
+    @classmethod
+    def empty_key_means_no_key(cls, value: object) -> object:
+        # Compose passes ANTHROPIC_API_KEY="" when .env leaves it empty
+        return None if value == "" else value
 
     @property
     def database_url(self) -> str:
