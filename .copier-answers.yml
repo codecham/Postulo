@@ -1,0 +1,11 @@
+# Answers given to the template questions. Used by `copier update`: do not edit by hand.
+_commit: v1.0.1
+_src_path: gh:codecham/fullstack-template
+author_email: 59926750+codecham@users.noreply.github.com
+author_name: codecham
+description: 'AI-assisted job search app: job offer collection, scoring, CV and cover
+    letter generation, application tracking'
+license: MIT
+project_name: Postulo
+project_slug: postulo
+use_pgvector: true

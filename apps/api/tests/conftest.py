@@ -1,41 +1,60 @@
-"""Shared test setup: pytest loads this file automatically before the tests."""
+"""Shared test setup: pytest loads this file automatically before the tests.
+
+The tests use a real PostgreSQL database named "<POSTGRES_DB>_test", recreated at the
+start of every run and migrated with Alembic. Each test runs inside a transaction
+that is rolled back afterwards, so tests never see each other's data.
+"""
 
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.main import app
-from app.models import Base
 from tests.fakes import FakeSession
 
 settings = get_settings()
 TEST_DB_NAME = f"{settings.postgres_db}_test"
 TEST_DATABASE_URL = settings.model_copy(update={"postgres_db": TEST_DB_NAME}).database_url
-# The "postgres" database always exists: we connect to it to create the test database
+# The "postgres" database always exists: we connect to it to (re)create the test database
 ADMIN_DATABASE_URL = settings.model_copy(update={"postgres_db": "postgres"}).database_url
+ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
+
+
+def recreate_test_database() -> None:
+    admin_engine = create_engine(ADMIN_DATABASE_URL, isolation_level="AUTOCOMMIT")
+    try:
+        with admin_engine.connect() as connection:
+            connection.execute(text(f'DROP DATABASE IF EXISTS "{TEST_DB_NAME}" WITH (FORCE)'))
+            connection.execute(text(f'CREATE DATABASE "{TEST_DB_NAME}"'))
+    except OperationalError as error:
+        pytest.exit(
+            f"Cannot reach PostgreSQL at {settings.postgres_host}:{settings.postgres_port}. "
+            "Start it with `make db` (or run the tests with `make test`).\n"
+            f"Error: {error.orig}",
+            returncode=1,
+        )
+    finally:
+        admin_engine.dispose()
 
 
 @pytest.fixture(scope="session")
 def db_engine() -> Iterator[Engine]:
-    """Create a fresh test database once for the whole test run."""
-    admin_engine = create_engine(ADMIN_DATABASE_URL, isolation_level="AUTOCOMMIT")
-    with admin_engine.connect() as connection:
-        exists = connection.scalar(
-            text("SELECT 1 FROM pg_database WHERE datname = :name"),
-            {"name": TEST_DB_NAME},
-        )
-        if not exists:
-            connection.execute(text(f'CREATE DATABASE "{TEST_DB_NAME}"'))
-    admin_engine.dispose()
+    """A fresh, fully migrated test database, created once for the whole test run."""
+    recreate_test_database()
+    alembic_config = Config(ALEMBIC_INI)
+    alembic_config.set_main_option("sqlalchemy.url", TEST_DATABASE_URL.replace("%", "%%"))
+    command.upgrade(alembic_config, "head")
 
     engine = create_engine(TEST_DATABASE_URL)
-    Base.metadata.drop_all(engine)  # start from empty tables
-    Base.metadata.create_all(engine)
     yield engine
     engine.dispose()
 
@@ -64,15 +83,15 @@ def client() -> Iterator[TestClient]:
 
 
 @pytest.fixture
-def fake_db() -> FakeSession:
-    """Replace the real database session with a fake one for this test."""
-    session = FakeSession()
-    app.dependency_overrides[get_db] = lambda: session
-    return session
-
-
-@pytest.fixture
 def db(db_session: Session) -> Session:
     """Make the routes use the test database session for this test."""
     app.dependency_overrides[get_db] = lambda: db_session
     return db_session
+
+
+@pytest.fixture
+def fake_db() -> FakeSession:
+    """Replace the real database session with a fake one (e.g. to simulate an outage)."""
+    session = FakeSession()
+    app.dependency_overrides[get_db] = lambda: session
+    return session

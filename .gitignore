@@ -16,13 +16,12 @@ htmlcov/
 # Node / Next.js
 node_modules/
 .next/
-out/
 *.tsbuildinfo
-next-env.d.ts
-npm-debug.log*
-pnpm-debug.log*
 
 # Editors / OS
 .DS_Store
 .idea/
 .vscode/
+
+# Claude Code: personal settings (the shared .claude/settings.json is committed)
+.claude/settings.local.json
