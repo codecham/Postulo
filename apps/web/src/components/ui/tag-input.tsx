@@ -8,6 +8,7 @@ import {
   inputClassName,
   labelClassName,
 } from "@/components/ui/styles";
+import { useListState } from "@/components/ui/use-list-state";
 
 type TagInputProps = {
   label: string;
@@ -25,7 +26,7 @@ export function TagInput({
   placeholder,
   maxLength = 100,
 }: TagInputProps) {
-  const [tags, setTags] = useState(defaultValue);
+  const [tags, setTags] = useListState(defaultValue);
   const [draft, setDraft] = useState("");
 
   function addTags(values: string[]) {
