@@ -1,7 +1,10 @@
+# Git hooks, installed by `make setup` (or `make hooks`).
+# Fast checks run on every commit; slower type checks run before each push.
+# Run them all by hand: uvx pre-commit run --all-files
 default_install_hook_types: [pre-commit, pre-push]
 
 repos:
-  # --- Generic hooks (whole repository) ---
+  # --- Whole repository ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -9,7 +12,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
-        exclude: ^apps/web/tsconfig.*\.json$ # tsconfig files contain comments
+        exclude: ^apps/web/tsconfig\.json$ # tsconfig allows comments
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
@@ -25,34 +28,30 @@ repos:
       - id: ruff-format
         files: ^apps/api/
 
-  # --- Local hooks that use the project's own tools ---
+  # --- Hooks that use the project's own tools and versions ---
   - repo: local
     hooks:
-      # API: type checking with mypy, using the API's uv environment
       - id: mypy
         name: mypy (api)
-        entry: uv run --directory apps/api mypy app
+        entry: uv run --directory apps/api mypy .
         language: system
         files: ^apps/api/.*\.py$
         pass_filenames: false
         stages: [pre-push]
 
-      # Web: Prettier
       - id: prettier
         name: prettier (web)
         entry: bash -c 'cd apps/web && npx prettier --write --ignore-unknown "${@#apps/web/}"' --
         language: system
         files: ^apps/web/
-        types_or: [javascript, jsx, ts, tsx, json, css, scss, markdown]
+        types_or: [javascript, jsx, ts, tsx, json, css, markdown]
 
-      # Web: ESLint
       - id: eslint
         name: eslint (web)
         entry: bash -c 'cd apps/web && npx eslint --fix --max-warnings=0 "${@#apps/web/}"' --
         language: system
         files: ^apps/web/.*\.(js|jsx|ts|tsx|mjs)$
 
-      # Web: TypeScript check (slow, so it runs on push)
       - id: tsc
         name: tsc (web)
         entry: bash -c 'cd apps/web && npm run typecheck'

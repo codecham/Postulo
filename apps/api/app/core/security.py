@@ -39,8 +39,9 @@ def decode_access_token(token: str) -> str | None:
             token,
             settings.jwt_secret_key.get_secret_value(),
             algorithms=[settings.jwt_algorithm],
+            options={"require": ["exp", "sub"]},
         )
-    except jwt.InvalidTokenError:  # bad signature, expired, malformed…
+    except jwt.InvalidTokenError:  # bad signature, expired, malformed...
         return None
-    subject = payload.get("sub")
+    subject = payload["sub"]
     return subject if isinstance(subject, str) else None
