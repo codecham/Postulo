@@ -27,6 +27,8 @@ def merge_profile(current: Profile, extracted: ProfileUpdate) -> ProfileUpdate:
         work_modes=combine(current.work_modes, extracted.work_modes),
         countries=combine(current.countries, extracted.countries),
         open_to_remote_abroad=current.open_to_remote_abroad or extracted.open_to_remote_abroad,
+        # A CV says which languages the user speaks, not which offers they want to read
+        offer_languages=current.offer_languages,
     )
 
 

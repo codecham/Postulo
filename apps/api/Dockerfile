@@ -20,7 +20,10 @@ FROM python:3.15-slim AS runtime
 ENV PATH="/code/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
-RUN useradd --create-home --uid 1000 app
+# The cache folder is owned by "app", so the volume mounted there (embedding model) is writable
+RUN useradd --create-home --uid 1000 app \
+    && mkdir -p /home/app/.cache/huggingface \
+    && chown -R app:app /home/app/.cache
 WORKDIR /code
 
 COPY --from=build /code/.venv ./.venv

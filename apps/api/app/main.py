@@ -2,7 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routes import auth, cv_imports, educations, experiences, health, profile, users
+from app.routes import (
+    auth,
+    cv_imports,
+    educations,
+    experiences,
+    health,
+    job_search,
+    profile,
+    users,
+)
 
 settings = get_settings()
 
@@ -24,3 +33,4 @@ app.include_router(profile.router)
 app.include_router(cv_imports.router)
 app.include_router(experiences.router)
 app.include_router(educations.router)
+app.include_router(job_search.router)

@@ -50,6 +50,27 @@ class Settings(BaseSettings):
     # Each import costs money: limit how many a user can start per hour
     cv_imports_per_hour: int = Field(default=5, gt=0)
 
+    # Job search worker
+    # Free key from https://developer.adzuna.com: adds Belgian (and other) on-site offers.
+    # Without it, the search only uses the job boards that need no key (remote jobs).
+    adzuna_app_id: str | None = None
+    adzuna_app_key: SecretStr | None = None
+    # Local, free embedding model (https://huggingface.co/minishlab), downloaded once
+    embedding_model: str = "minishlab/potion-multilingual-128M"
+    # Hours between two automatic searches for the same user
+    job_search_interval_hours: int = Field(default=24, gt=0)
+    # Searches a user can start by hand per day: public job boards ask for few calls
+    manual_job_searches_per_day: int = Field(default=5, gt=0)
+    # How often the worker looks for searches to run
+    worker_poll_seconds: float = Field(default=30, gt=0)
+    # Below this score (0-100), an offer is not saved as a match
+    job_match_min_score: int = Field(default=50, ge=0, le=100)
+
+    @field_validator("adzuna_app_id", "adzuna_app_key", mode="before")
+    @classmethod
+    def empty_adzuna_means_none(cls, value: object) -> object:
+        return None if value == "" else value
+
     @field_validator("anthropic_api_key", mode="before")
     @classmethod
     def empty_key_means_no_key(cls, value: object) -> object:

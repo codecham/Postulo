@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, Text, false
+from sqlalchemy import ForeignKey, String, Text, true
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,5 +36,8 @@ class Profile(TimestampMixin, Base):
     # Job search criteria
     desired_titles: Mapped[list[str]] = mapped_column(ARRAY(String(100)), server_default="{}")
     work_modes: Mapped[list[str]] = mapped_column(ARRAY(String(10)), server_default="{}")
-    countries: Mapped[list[str]] = mapped_column(ARRAY(String(2)), server_default="{}")
-    open_to_remote_abroad: Mapped[bool] = mapped_column(server_default=false())
+    # New profiles search Belgium, plus remote jobs abroad, in French or English
+    countries: Mapped[list[str]] = mapped_column(ARRAY(String(2)), server_default="{BE}")
+    open_to_remote_abroad: Mapped[bool] = mapped_column(server_default=true())
+    # Languages the job offers may be written in (ISO 639-1). Empty: any language.
+    offer_languages: Mapped[list[str]] = mapped_column(ARRAY(String(2)), server_default="{fr,en}")
