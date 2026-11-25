@@ -4,7 +4,15 @@ import { FileField } from "@/components/ui/file-field";
 import { FormSection } from "@/components/ui/form-section";
 import { CV_MAX_BYTES, CV_MAX_SIZE_LABEL } from "@/lib/cv-import/limits";
 
-export function CvUploadForm() {
+export function CvUploadForm({ isAvailable }: { isAvailable: boolean }) {
+  if (!isAvailable) {
+    return (
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        The PDF upload needs a Claude API key on the server (ANTHROPIC_API_KEY).
+        Use the Claude Code tab instead: it is free with your Claude plan.
+      </p>
+    );
+  }
   return (
     <ActionForm
       action={startCvImport}
@@ -13,7 +21,7 @@ export function CvUploadForm() {
     >
       <FormSection
         title="Upload your CV"
-        description="A CV, or your LinkedIn profile saved as PDF (on your profile: More → Save to PDF). Read by the Claude API: this server needs an API key."
+        description="A CV, or your LinkedIn profile saved as PDF (on your profile: More → Save to PDF). It is read by the Claude API."
       >
         <FileField
           label="PDF file"

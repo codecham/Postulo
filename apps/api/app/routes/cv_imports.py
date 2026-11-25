@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from app.core.config import get_settings
 from app.core.dependencies import CurrentUser, DbSession
 from app.models import CvImport
-from app.schemas.cv_import import CvImportApply, CvImportRead
+from app.schemas.cv_import import CvImportApply, CvImportOptions, CvImportRead
 from app.services.cv_import import errors, imports
 from app.services.cv_import.claude_extractor import build_claude_extractor
 from app.services.cv_import.extraction import CvExtraction, CvExtractor
@@ -83,6 +83,12 @@ def get_owned_import(import_id: uuid.UUID, user: CurrentUser, db: DbSession) -> 
 
 Extractor = Annotated[CvExtractor, Depends(get_cv_extractor)]
 OwnedImport = Annotated[CvImport, Depends(get_owned_import)]
+
+
+@router.get("/options")
+def read_import_options(user: CurrentUser) -> CvImportOptions:
+    """Tell the client which import methods work, so it can offer the right one."""
+    return CvImportOptions(pdf_upload=get_settings().anthropic_api_key is not None)
 
 
 @router.post(

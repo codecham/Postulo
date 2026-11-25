@@ -42,3 +42,10 @@ class CvImportApply(BaseModel):
 
     profile: ProfileUpdate
     experiences: list[ExperienceCreate] = Field(default=[], max_length=TAG_LIST_MAX_LENGTH)
+
+
+class CvImportOptions(BaseModel):
+    """Which import methods this server offers."""
+
+    # False without ANTHROPIC_API_KEY: only the Claude Code import works then
+    pdf_upload: bool

@@ -2,6 +2,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from app.core.config import get_settings
 from app.main import app
@@ -266,3 +267,23 @@ def test_an_extraction_that_is_not_a_cv_is_rejected(client: TestClient, login_as
 
     assert response.status_code == 422
     assert response.json()["detail"] == "This document does not look like a CV or a profile"
+
+
+# --- Options ---
+
+
+@pytest.mark.parametrize(("api_key", "pdf_upload"), [(None, False), ("sk-test", True)])
+def test_options_tell_whether_the_pdf_upload_works(
+    client: TestClient,
+    login_as: LoginAs,
+    monkeypatch: pytest.MonkeyPatch,
+    api_key: str | None,
+    pdf_upload: bool,
+) -> None:
+    key = None if api_key is None else SecretStr(api_key)
+    monkeypatch.setattr(get_settings(), "anthropic_api_key", key)
+    headers = login_as("alice@mail.com")
+
+    response = client.get("/profile/imports/options", headers=headers)
+
+    assert response.json() == {"pdf_upload": pdf_upload}

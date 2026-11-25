@@ -107,6 +107,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/profile/imports/options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Import Options
+     * @description Tell the client which import methods work, so it can offer the right one.
+     */
+    get: operations["read_import_options_profile_imports_options_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/profile/imports": {
     parameters: {
       query?: never;
@@ -356,6 +376,14 @@ export interface components {
       experiences: components["schemas"]["DraftExperience"][];
       /** Warnings */
       warnings: string[];
+    };
+    /**
+     * CvImportOptions
+     * @description Which import methods this server offers.
+     */
+    CvImportOptions: {
+      /** Pdf Upload */
+      pdf_upload: boolean;
     };
     /** CvImportRead */
     CvImportRead: {
@@ -861,6 +889,26 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  read_import_options_profile_imports_options_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CvImportOptions"];
         };
       };
     };

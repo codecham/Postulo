@@ -11,11 +11,12 @@ export type Tab = {
 type TabsProps = {
   label: string; // what the tabs choose between, for screen readers
   tabs: Tab[];
+  defaultId?: string; // the tab shown first (the first one by default)
 };
 
 /** Show one panel at a time. Hidden panels stay mounted, so they keep their input. */
-export function Tabs({ label, tabs }: TabsProps) {
-  const [activeId, setActiveId] = useState(tabs[0]?.id);
+export function Tabs({ label, tabs, defaultId }: TabsProps) {
+  const [activeId, setActiveId] = useState(defaultId ?? tabs[0]?.id);
 
   return (
     <div className="flex flex-col gap-6">
