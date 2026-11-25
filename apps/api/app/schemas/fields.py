@@ -28,17 +28,26 @@ def unique_ignoring_case[T: str](values: list[T]) -> list[T]:
     return unique
 
 
+# Maximum lengths, also used to shorten text that comes from elsewhere (e.g. a CV)
+SHORT_TEXT_MAX_LENGTH = 100
+MEDIUM_TEXT_MAX_LENGTH = 200
+LONG_TEXT_MAX_LENGTH = 5000
+TAG_LIST_MAX_LENGTH = 50
+
+
 def _text(max_length: int) -> StringConstraints:
     return StringConstraints(strip_whitespace=True, min_length=1, max_length=max_length)
 
 
-ShortText = Annotated[str, _text(100)]
-MediumText = Annotated[str, _text(200)]
-LongText = Annotated[str, _text(5000)]
+ShortText = Annotated[str, _text(SHORT_TEXT_MAX_LENGTH)]
+MediumText = Annotated[str, _text(MEDIUM_TEXT_MAX_LENGTH)]
+LongText = Annotated[str, _text(LONG_TEXT_MAX_LENGTH)]
 
 OptionalShortText = Annotated[ShortText | None, BeforeValidator(blank_to_none)]
 OptionalMediumText = Annotated[MediumText | None, BeforeValidator(blank_to_none)]
 OptionalLongText = Annotated[LongText | None, BeforeValidator(blank_to_none)]
 
 # A list of free-text values such as skills: trimmed, without duplicates, 50 at most
-TagList = Annotated[list[ShortText], Field(max_length=50), AfterValidator(unique_ignoring_case)]
+TagList = Annotated[
+    list[ShortText], Field(max_length=TAG_LIST_MAX_LENGTH), AfterValidator(unique_ignoring_case)
+]

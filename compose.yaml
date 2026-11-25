@@ -16,6 +16,8 @@ x-api-environment: &api-environment
   POSTGRES_PORT: 5432
   JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set JWT_SECRET_KEY in .env (run make setup)}
   ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+  # Optional: an empty key disables the CV import
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   CORS_ORIGINS: '["http://localhost:${WEB_PORT:-3000}"]'
 
 services:

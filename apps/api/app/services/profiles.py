@@ -31,11 +31,16 @@ def get_or_create_profile(db: Session, user_id: uuid.UUID) -> Profile:
 
 def update_profile(db: Session, user_id: uuid.UUID, data: ProfileUpdate) -> Profile:
     profile = get_or_create_profile(db, user_id)
-    for field, value in data.model_dump().items():
-        setattr(profile, field, value)
+    assign_profile(profile, data)
     db.commit()
     db.refresh(profile)
     return profile
+
+
+def assign_profile(profile: Profile, data: ProfileUpdate) -> None:
+    """Replace every field of the profile, without committing (the caller commits)."""
+    for field, value in data.model_dump().items():
+        setattr(profile, field, value)
 
 
 def _create_empty_profile(db: Session, user_id: uuid.UUID) -> Profile:

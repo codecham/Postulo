@@ -36,8 +36,13 @@ def get_experience(db: Session, user_id: uuid.UUID, experience_id: uuid.UUID) ->
     return experience
 
 
+def build_experience(user_id: uuid.UUID, data: ExperienceCreate) -> Experience:
+    """A new experience, not added to any session yet."""
+    return Experience(user_id=user_id, **data.model_dump())
+
+
 def create_experience(db: Session, user_id: uuid.UUID, data: ExperienceCreate) -> Experience:
-    experience = Experience(user_id=user_id, **data.model_dump())
+    experience = build_experience(user_id, data)
     db.add(experience)
     db.commit()
     db.refresh(experience)
