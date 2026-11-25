@@ -517,6 +517,52 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/tracking": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Board
+     * @description Every sent application, the most recent first, with the count of each status.
+     */
+    get: operations["read_board_tracking_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches/{match_id}/tracking": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read Tracking */
+    get: operations["read_tracking_job_search_matches__match_id__tracking_get"];
+    put?: never;
+    /**
+     * Mark As Sent
+     * @description Mark the application as sent: it moves to the tracking board.
+     */
+    post: operations["mark_as_sent_job_search_matches__match_id__tracking_post"];
+    /** Undo Mark As Sent */
+    delete: operations["undo_mark_as_sent_job_search_matches__match_id__tracking_delete"];
+    options?: never;
+    head?: never;
+    /**
+     * Update Tracking
+     * @description Change the status, the dates or the notes. A new status is added to the history.
+     */
+    patch: operations["update_tracking_job_search_matches__match_id__tracking_patch"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1386,6 +1432,122 @@ export interface components {
       token_type?: "bearer";
       /** Expires In */
       expires_in: number;
+    };
+    /**
+     * TrackedApplicationRead
+     * @description A tracked application with its offer, for the tracking board.
+     */
+    TrackedApplicationRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Match Id
+       * Format: uuid
+       */
+      match_id: string;
+      status: components["schemas"]["TrackingStatus"];
+      /**
+       * Applied On
+       * Format: date
+       */
+      applied_on: string;
+      /** Follow Up On */
+      follow_up_on: string | null;
+      /** Notes */
+      notes: string | null;
+      /** Follow Up Due */
+      follow_up_due: boolean;
+      /** Events */
+      events: components["schemas"]["TrackingEventRead"][];
+      offer: components["schemas"]["JobOfferRead"];
+    };
+    /** TrackingBoard */
+    TrackingBoard: {
+      /** Items */
+      items: components["schemas"]["TrackedApplicationRead"][];
+      counts: components["schemas"]["TrackingCounts"];
+    };
+    /** TrackingCounts */
+    TrackingCounts: {
+      /** Applied */
+      applied: number;
+      /** Interview */
+      interview: number;
+      /** Offer */
+      offer: number;
+      /** Rejected */
+      rejected: number;
+      /** Withdrawn */
+      withdrawn: number;
+    };
+    /**
+     * TrackingCreate
+     * @description Body of POST .../tracking ("Mark as sent"). Every field has a default.
+     */
+    TrackingCreate: {
+      /** Applied On */
+      applied_on?: string | null;
+      /** Follow Up On */
+      follow_up_on?: string | null;
+    };
+    /** TrackingEventRead */
+    TrackingEventRead: {
+      status: components["schemas"]["TrackingStatus"];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** TrackingRead */
+    TrackingRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Match Id
+       * Format: uuid
+       */
+      match_id: string;
+      status: components["schemas"]["TrackingStatus"];
+      /**
+       * Applied On
+       * Format: date
+       */
+      applied_on: string;
+      /** Follow Up On */
+      follow_up_on: string | null;
+      /** Notes */
+      notes: string | null;
+      /** Follow Up Due */
+      follow_up_due: boolean;
+      /** Events */
+      events: components["schemas"]["TrackingEventRead"][];
+    };
+    /**
+     * TrackingStatus
+     * @description Where a sent application stands.
+     * @enum {string}
+     */
+    TrackingStatus:
+      "applied" | "interview" | "offer" | "rejected" | "withdrawn";
+    /**
+     * TrackingUpdate
+     * @description Body of PATCH .../tracking: only the fields sent are changed.
+     */
+    TrackingUpdate: {
+      status?: components["schemas"]["TrackingStatus"] | null;
+      /** Applied On */
+      applied_on?: string | null;
+      /** Follow Up On */
+      follow_up_on?: string | null;
+      /** Notes */
+      notes?: string | null;
     };
     /**
      * UserCreate
@@ -2618,6 +2780,191 @@ export interface operations {
         };
       };
       /** @description No application yet */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  read_board_tracking_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingBoard"];
+        };
+      };
+    };
+  };
+  read_tracking_job_search_matches__match_id__tracking_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingRead"];
+        };
+      };
+      /** @description No such match, or not marked as sent */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  mark_as_sent_job_search_matches__match_id__tracking_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TrackingCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingRead"];
+        };
+      };
+      /** @description No such match, or not marked as sent */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Already marked as sent */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  undo_mark_as_sent_job_search_matches__match_id__tracking_delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No such match, or not marked as sent */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_tracking_job_search_matches__match_id__tracking_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        match_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TrackingUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TrackingRead"];
+        };
+      };
+      /** @description No such match, or not marked as sent */
       404: {
         headers: {
           [name: string]: unknown;

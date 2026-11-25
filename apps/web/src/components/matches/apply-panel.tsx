@@ -2,23 +2,28 @@ import Link from "next/link";
 
 import { DocumentLinks } from "@/components/applications/document-links";
 import { WriteApplication } from "@/components/applications/write-application";
+import { MarkAsSentButton } from "@/components/tracking/mark-as-sent-button";
+import { StatusBadge } from "@/components/tracking/status-badge";
 import { Card } from "@/components/ui/card";
 import { secondaryButtonClassName } from "@/components/ui/styles";
 import type { Application } from "@/lib/applications/types";
 import type { JobOffer } from "@/lib/job-search/types";
+import type { Tracking } from "@/lib/tracking/types";
 
 type ApplyPanelProps = {
   matchId: string;
   offer: JobOffer;
   application: Application | null; // null until one is written
+  tracking: Tracking | null; // null until marked as sent
   canUseAi: boolean;
 };
 
-/** From a match to a sent application: write the documents, download them, apply. */
+/** From a match to a sent application: write, download, apply, mark as sent. */
 export function ApplyPanel({
   matchId,
   offer,
   application,
+  tracking,
   canUseAi,
 }: ApplyPanelProps) {
   return (
@@ -58,6 +63,13 @@ export function ApplyPanel({
         >
           Apply on {offer.source} ↗
         </a>
+        {tracking ? (
+          <span className="flex items-center gap-2 text-sm">
+            Sent <StatusBadge status={tracking.status} />
+          </span>
+        ) : (
+          <MarkAsSentButton matchId={matchId} />
+        )}
       </div>
     </Card>
   );
