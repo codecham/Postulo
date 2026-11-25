@@ -73,6 +73,16 @@ def set_status(
     return match
 
 
+def shortlist(db: Session, user_id: uuid.UUID, match_id: uuid.UUID) -> None:
+    """Save a match the user acts on (writes or sends an application), if it is new.
+
+    Not committed: the caller commits it with its own changes.
+    """
+    match = get_match(db, user_id, match_id)
+    if match.status == MatchStatus.NEW:
+        match.status = MatchStatus.SAVED
+
+
 def filter_conditions(user_id: uuid.UUID, query: MatchQuery) -> list[ColumnElement[bool]]:
     """The query's filters, all but the status (the tabs count every status)."""
     conditions = [JobMatch.user_id == user_id, JobMatch.score >= query.min_score]

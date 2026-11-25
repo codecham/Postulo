@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import Application, JobMatch, MatchStatus, User
+from app.models import Application, JobMatch, User
 from app.schemas.application import (
     ApplicationContent,
     ApplicationLanguage,
@@ -84,7 +84,7 @@ def save_application(
         contact=contact_of(db, user),
         **result.application.model_dump(),
     )
-    shortlist(db, user.id, match_id)
+    dashboard.shortlist(db, user.id, match_id)
     application = Application(
         user_id=user.id,
         match_id=match_id,
@@ -97,14 +97,6 @@ def save_application(
         created_at=datetime.now(UTC),
     )
     return _save(db, application)
-
-
-def shortlist(db: Session, user_id: uuid.UUID, match_id: uuid.UUID) -> None:
-    """Save a new match: the next search deletes the new matches that no longer fit, and
-    their applications with them."""
-    match = dashboard.get_match(db, user_id, match_id)
-    if match.status == MatchStatus.NEW:
-        match.status = MatchStatus.SAVED
 
 
 def update_application(

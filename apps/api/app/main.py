@@ -12,6 +12,7 @@ from app.routes import (
     job_matches,
     job_search,
     profile,
+    tracking,
     users,
 )
 
@@ -39,3 +40,5 @@ app.include_router(job_search.router)
 app.include_router(job_matches.router)
 app.include_router(applications.options_router)
 app.include_router(applications.router)
+app.include_router(tracking.board_router)
+app.include_router(tracking.router)

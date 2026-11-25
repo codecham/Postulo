@@ -9,7 +9,7 @@ from sqlalchemy import delete, func, or_, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.models import JobMatch, JobOffer, MatchStatus
+from app.models import Application, JobMatch, JobOffer, MatchStatus, TrackedApplication
 from app.services.job_search.criteria import SearchCriteria
 from app.services.job_search.filters import fits_criteria
 from app.services.job_search.scoring import find_skills, score_offer
@@ -79,7 +79,8 @@ def save_matches(db: Session, user_id: uuid.UUID, matches: Sequence[ScoredOffer]
 
     Known matches are updated in place, so they keep their creation date and status.
     Only new matches that no longer fit are removed: the saved ones stay on the
-    shortlist, and the dismissed ones stay hidden even if they fit again later.
+    shortlist, and the dismissed ones stay hidden even if they fit again later. A match
+    the user wrote or sent an application for is never removed, whatever its status.
     """
     offer_ids = [item.offer.id for item in matches]
     db.execute(
@@ -87,6 +88,8 @@ def save_matches(db: Session, user_id: uuid.UUID, matches: Sequence[ScoredOffer]
             JobMatch.user_id == user_id,
             JobMatch.status == MatchStatus.NEW,
             JobMatch.offer_id.not_in(offer_ids),
+            JobMatch.id.not_in(select(Application.match_id)),
+            JobMatch.id.not_in(select(TrackedApplication.match_id)),
         )
     )
     if not matches:
