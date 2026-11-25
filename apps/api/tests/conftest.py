@@ -5,7 +5,7 @@ start of every run and migrated with Alembic. Each test runs inside a transactio
 that is rolled back afterwards, so tests never see each other's data.
 """
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
@@ -95,3 +95,23 @@ def fake_db() -> FakeSession:
     session = FakeSession()
     app.dependency_overrides[get_db] = lambda: session
     return session
+
+
+# A function that logs a user in and returns the headers to send with their requests
+LoginAs = Callable[[str], dict[str, str]]
+
+
+@pytest.fixture
+def login_as(client: TestClient, db: Session) -> LoginAs:
+    """Create an account (if needed), log in, and return the Authorization header.
+
+    Usage: `headers = login_as("alice@mail.com")`, then `client.get(..., headers=headers)`.
+    """
+
+    def login(email: str) -> dict[str, str]:
+        password = "correct horse"
+        client.post("/auth/register", json={"email": email, "password": password})
+        response = client.post("/auth/login", data={"username": email, "password": password})
+        return {"Authorization": f"Bearer {response.json()['access_token']}"}
+
+    return login

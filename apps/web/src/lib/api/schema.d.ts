@@ -89,6 +89,60 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/profile/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read My Profile */
+    get: operations["read_my_profile_profile_me_get"];
+    /** Update My Profile */
+    put: operations["update_my_profile_profile_me_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/experiences": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List My Experiences */
+    get: operations["list_my_experiences_experiences_get"];
+    put?: never;
+    /** Create Experience */
+    post: operations["create_experience_experiences_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/experiences/{experience_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Update Experience */
+    put: operations["update_experience_experiences__experience_id__put"];
+    post?: never;
+    /** Delete Experience */
+    delete: operations["delete_experience_experiences__experience_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -125,6 +179,68 @@ export interface components {
        */
       database: "ok";
     };
+    /** ExperienceCreate */
+    ExperienceCreate: {
+      /** Title */
+      title: string;
+      /** Company */
+      company: string;
+      /** Location */
+      location?: string | null;
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string;
+      /** End Date */
+      end_date?: string | null;
+      /** Description */
+      description?: string | null;
+    };
+    /** ExperienceRead */
+    ExperienceRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Title */
+      title: string;
+      /** Company */
+      company: string;
+      /** Location */
+      location: string | null;
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string;
+      /** End Date */
+      end_date: string | null;
+      /** Description */
+      description: string | null;
+    };
+    /**
+     * ExperienceUpdate
+     * @description Same fields as ExperienceCreate: PUT replaces the whole experience.
+     */
+    ExperienceUpdate: {
+      /** Title */
+      title: string;
+      /** Company */
+      company: string;
+      /** Location */
+      location?: string | null;
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string;
+      /** End Date */
+      end_date?: string | null;
+      /** Description */
+      description?: string | null;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -137,6 +253,78 @@ export interface components {
        * @constant
        */
       status: "ok";
+    };
+    /** ProfileRead */
+    ProfileRead: {
+      /** Full Name */
+      full_name: string | null;
+      /** Headline */
+      headline: string | null;
+      /** Summary */
+      summary: string | null;
+      /** City */
+      city: string | null;
+      /** Skills */
+      skills: string[];
+      /** Languages */
+      languages: string[];
+      /** Desired Titles */
+      desired_titles: string[];
+      /** Work Modes */
+      work_modes: components["schemas"]["WorkMode"][];
+      /** Countries */
+      countries: string[];
+      /** Open To Remote Abroad */
+      open_to_remote_abroad: boolean;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * ProfileUpdate
+     * @description Body of PUT /profile/me. It replaces the whole profile: a missing field is reset.
+     */
+    ProfileUpdate: {
+      /** Full Name */
+      full_name?: string | null;
+      /** Headline */
+      headline?: string | null;
+      /** Summary */
+      summary?: string | null;
+      /** City */
+      city?: string | null;
+      /**
+       * Skills
+       * @default []
+       */
+      skills?: string[];
+      /**
+       * Languages
+       * @default []
+       */
+      languages?: string[];
+      /**
+       * Desired Titles
+       * @default []
+       */
+      desired_titles?: string[];
+      /**
+       * Work Modes
+       * @default []
+       */
+      work_modes?: components["schemas"]["WorkMode"][];
+      /**
+       * Countries
+       * @default []
+       */
+      countries?: string[];
+      /**
+       * Open To Remote Abroad
+       * @default false
+       */
+      open_to_remote_abroad?: boolean;
     };
     /**
      * Token
@@ -203,6 +391,11 @@ export interface components {
       /** Context */
       ctx?: Record<string, never>;
     };
+    /**
+     * WorkMode
+     * @enum {string}
+     */
+    WorkMode: "remote" | "hybrid" | "onsite";
   };
   responses: never;
   parameters: never;
@@ -348,6 +541,190 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["UserRead"];
+        };
+      };
+    };
+  };
+  read_my_profile_profile_me_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProfileRead"];
+        };
+      };
+    };
+  };
+  update_my_profile_profile_me_put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProfileUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProfileRead"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_my_experiences_experiences_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ExperienceRead"][];
+        };
+      };
+    };
+  };
+  create_experience_experiences_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ExperienceCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ExperienceRead"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_experience_experiences__experience_id__put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        experience_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ExperienceUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ExperienceRead"];
+        };
+      };
+      /** @description Experience not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_experience_experiences__experience_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        experience_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Experience not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };

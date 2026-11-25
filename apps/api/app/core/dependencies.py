@@ -38,5 +38,6 @@ def get_current_user(
     return user
 
 
-# Shortcut for routes: `def route(user: CurrentUser)`
+# Shortcuts for routes: `def route(user: CurrentUser, db: DbSession)`
 CurrentUser = Annotated[User, Depends(get_current_user)]
+DbSession = Annotated[Session, Depends(get_db)]
