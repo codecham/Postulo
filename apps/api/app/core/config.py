@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     # Searches a user can start by hand per day: public job boards ask for few calls
     manual_job_searches_per_day: int = Field(default=5, gt=0)
     # How often the worker looks for searches to run
-    worker_poll_seconds: float = Field(default=30, gt=0)
+    worker_poll_seconds: float = Field(default=10, gt=0)
     # Below this score (0-100), an offer is not saved as a match
     job_match_min_score: int = Field(default=50, ge=0, le=100)
 
