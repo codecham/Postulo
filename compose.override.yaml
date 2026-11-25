@@ -14,6 +14,16 @@ services:
         - action: rebuild
           path: ./apps/api/uv.lock
 
+  worker:
+    develop:
+      watch:
+        # The worker has no hot reload of its own: restart it after a sync
+        - action: sync+restart
+          path: ./apps/api/app
+          target: /code/app
+        - action: rebuild
+          path: ./apps/api/uv.lock
+
   web:
     build:
       target: dev

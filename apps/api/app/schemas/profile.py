@@ -53,6 +53,7 @@ class ProfileUpdate(BaseModel):
     work_modes: WorkModeList = []
     countries: CountryList = []
     open_to_remote_abroad: bool = False
+    offer_languages: LanguageList = []
 
 
 class ProfileRead(BaseModel):
@@ -68,4 +69,5 @@ class ProfileRead(BaseModel):
     work_modes: list[WorkMode]
     countries: list[str]
     open_to_remote_abroad: bool
+    offer_languages: list[str]
     updated_at: datetime

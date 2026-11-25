@@ -1,11 +1,17 @@
 """Fake objects that replace real dependencies in tests."""
 
+import math
+import re
+import zlib
+from collections.abc import Sequence
+from datetime import UTC, datetime
 from io import BytesIO
 from typing import Any
 
 from pypdf import PdfWriter
 from sqlalchemy.exc import OperationalError
 
+from app.models import EMBEDDING_DIMENSIONS
 from app.services.cv_import.errors import ExtractionFailedError
 from app.services.cv_import.extraction import (
     CvExtraction,
@@ -13,6 +19,9 @@ from app.services.cv_import.extraction import (
     ExtractedExperience,
     ExtractionResult,
 )
+from app.services.job_search.criteria import SearchCriteria
+from app.services.job_search.errors import SourceError
+from app.services.job_search.offer import CollectedOffer
 
 
 class FakeSession:
@@ -105,3 +114,56 @@ def make_pdf(pages: int = 1, password: str | None = None) -> bytes:
     output = BytesIO()
     writer.write(output)
     return output.getvalue()
+
+
+def make_collected_offer(**changes: Any) -> CollectedOffer:
+    """A remote Python job, as a job board would return it."""
+    fields: dict[str, Any] = {
+        "source": "fake",
+        "external_id": "1",
+        "url": "https://jobs.example.com/1",
+        "title": "Python backend developer",
+        "description": "We are looking for a Python developer to build our API with FastAPI.",
+        "company": "Acme",
+        "location": "Europe",
+        "work_mode": "remote",
+        "published_at": datetime.now(UTC),
+    }
+    return CollectedOffer(**(fields | changes))
+
+
+class FakeJobSource:
+    """Stands in for a job board: returns `offers` without any network call.
+
+    Set `fail = True` to simulate a board that cannot be reached.
+    """
+
+    def __init__(self, name: str = "fake", offers: list[CollectedOffer] | None = None) -> None:
+        self.name = name
+        self.offers = offers or []
+        self.fail = False
+        self.criteria: list[SearchCriteria] = []
+
+    def fetch(self, criteria: SearchCriteria) -> list[CollectedOffer]:
+        self.criteria.append(criteria)
+        if self.fail:
+            raise SourceError(f"{self.name}: unreachable")
+        return self.offers
+
+
+class FakeEmbedder:
+    """Stands in for the embedding model: texts sharing words get close vectors.
+
+    Each word adds 1 to one of the dimensions (a stable hash of the word), then the
+    vector is scaled to length 1. No model download, and the results are predictable.
+    """
+
+    def embed(self, texts: Sequence[str]) -> list[list[float]]:
+        return [self._embed(text) for text in texts]
+
+    def _embed(self, text: str) -> list[float]:
+        vector = [0.0] * EMBEDDING_DIMENSIONS
+        for word in re.findall(r"\w+", text.casefold()):
+            vector[zlib.crc32(word.encode()) % EMBEDDING_DIMENSIONS] += 1.0
+        norm = math.sqrt(sum(value * value for value in vector)) or 1.0
+        return [value / norm for value in vector]

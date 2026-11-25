@@ -88,7 +88,15 @@ The API publishes an OpenAPI schema. `make api-types` turns it into TypeScript t
 
 Models live in `apps/api/app/models/`. After changing one, run `make migration m="describe the change"`, review the generated file in `apps/api/migrations/versions/`, then `make migrate`. In Docker, the one-off `migrate` service applies pending migrations before the API starts. A test fails if the models and the migrations disagree.
 
-### Tests
+### Job search worker
+
+The `worker` service ([app/worker.py](apps/api/app/worker.py)) runs the job searches, so the API never waits for a job board:
+
+1. Once a day per user (or when the user clicks **Search now** on `/jobs`), a row is queued in `job_search_runs`. The table is the queue: no message broker.
+2. The worker collects offers from free public job boards: [Remotive](https://remotive.com), [Jobicy](https://jobicy.com) and [Himalayas](https://himalayas.app) (remote jobs, no key), plus [Adzuna](https://developer.adzuna.com) (on-site jobs in Belgium and elsewhere) when `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` are set (free keys).
+3. Each new offer gets an embedding from a local, free model ([model2vec](https://github.com/MinishLab/model2vec), multilingual, downloaded once into the `models` volume) stored in a pgvector column.
+4. pgvector finds the offers closest in meaning to the profile; the worker keeps those that fit the search criteria (countries, work modes, remote abroad, offer languages) and saves them in `job_matches` with a 0-100 score.
+
 
 API tests run against a real PostgreSQL database (`<POSTGRES_DB>_test`), recreated and migrated at the start of each run. Every test runs in a transaction that is rolled back, so tests stay independent. `make test` starts the database container if needed.
 

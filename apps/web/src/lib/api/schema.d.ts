@@ -297,6 +297,66 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/job-search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Job Search
+     * @description The user's last search and the job boards this server searches.
+     */
+    get: operations["read_job_search_job_search_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/runs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Start Search
+     * @description Ask the worker to search now, without waiting for the daily search.
+     */
+    post: operations["start_search_job_search_runs_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/job-search/matches": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Matches
+     * @description The offers that fit the profile best.
+     */
+    get: operations["list_matches_job_search_matches_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -719,6 +779,112 @@ export interface components {
        */
       status: "ok";
     };
+    /** JobMatchRead */
+    JobMatchRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Score */
+      score: number;
+      /** Matched Skills */
+      matched_skills: string[];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      offer: components["schemas"]["JobOfferRead"];
+    };
+    /** JobOfferRead */
+    JobOfferRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Source */
+      source: string;
+      /** Url */
+      url: string;
+      /** Title */
+      title: string;
+      /** Company */
+      company: string | null;
+      /** Location */
+      location: string | null;
+      /** Country */
+      country: string | null;
+      work_mode: components["schemas"]["WorkMode"] | null;
+      /** Language */
+      language: string | null;
+      /** Description */
+      description: string;
+      /** Tags */
+      tags: string[];
+      /** Salary */
+      salary: string | null;
+      /** Published At */
+      published_at: string | null;
+    };
+    /** JobSearchOverview */
+    JobSearchOverview: {
+      latest_run: components["schemas"]["JobSearchRunRead"] | null;
+      /** Sources */
+      sources: components["schemas"]["JobSourceRead"][];
+    };
+    /** JobSearchRunRead */
+    JobSearchRunRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      status: components["schemas"]["JobSearchRunStatus"];
+      trigger: components["schemas"]["JobSearchTrigger"];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Started At */
+      started_at: string | null;
+      /** Finished At */
+      finished_at: string | null;
+      /** Offers Found */
+      offers_found: number;
+      /** Offers New */
+      offers_new: number;
+      /** Matches Found */
+      matches_found: number;
+      /** Failed Sources */
+      failed_sources: string[];
+      /** Error */
+      error: string | null;
+    };
+    /**
+     * JobSearchRunStatus
+     * @enum {string}
+     */
+    JobSearchRunStatus: "pending" | "running" | "succeeded" | "failed";
+    /**
+     * JobSearchTrigger
+     * @enum {string}
+     */
+    JobSearchTrigger: "scheduled" | "manual";
+    /**
+     * JobSourceRead
+     * @description A job board, and whether this server collects its offers.
+     */
+    JobSourceRead: {
+      /** Name */
+      name: string;
+      /** Url */
+      url: string;
+      /** Enabled */
+      enabled: boolean;
+    };
     /** ProfileRead */
     ProfileRead: {
       /** Full Name */
@@ -741,6 +907,8 @@ export interface components {
       countries: string[];
       /** Open To Remote Abroad */
       open_to_remote_abroad: boolean;
+      /** Offer Languages */
+      offer_languages: string[];
       /**
        * Updated At
        * Format: date-time
@@ -790,6 +958,11 @@ export interface components {
        * @default false
        */
       open_to_remote_abroad?: boolean;
+      /**
+       * Offer Languages
+       * @default []
+       */
+      offer_languages?: string[];
     };
     /**
      * Token
@@ -1569,6 +1742,98 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  read_job_search_job_search_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JobSearchOverview"];
+        };
+      };
+    };
+  };
+  start_search_job_search_runs_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JobSearchRunRead"];
+        };
+      };
+      /** @description A search is already running */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Add the job titles you are looking for (or skills) to your profile first */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Too many searches today, the next daily search will run automatically */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  list_matches_job_search_matches_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JobMatchRead"][];
+        };
       };
       /** @description Validation Error */
       422: {

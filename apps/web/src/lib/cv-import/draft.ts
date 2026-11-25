@@ -14,5 +14,6 @@ export function draftProfileValues({ profile }: CvImportDraft): ProfileValues {
     work_modes: profile.work_modes ?? [],
     countries: profile.countries ?? [],
     open_to_remote_abroad: profile.open_to_remote_abroad ?? false,
+    offer_languages: profile.offer_languages ?? [],
   };
 }

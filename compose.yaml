@@ -18,6 +18,9 @@ x-api-environment: &api-environment
   ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
   # Optional: an empty key disables the CV import
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  # Optional: free Adzuna keys add on-site offers (Belgium...) to the job search
+  ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+  ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
   CORS_ORIGINS: '["http://localhost:${WEB_PORT:-3000}"]'
 
 services:
@@ -69,6 +72,21 @@ services:
       start_period: 20s
     restart: unless-stopped
 
+  # Background job search: collects offers every day and scores them (app/worker.py)
+  worker:
+    build: ./apps/api
+    command: ["python", "-m", "app.worker"]
+    environment: *api-environment
+    volumes:
+      # The embedding model (~500 MB) is downloaded once and kept here
+      - models:/home/app/.cache/huggingface
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
   web:
     build:
       context: ./apps/web
@@ -91,3 +109,4 @@ services:
 
 volumes:
   pgdata:
+  models:

@@ -21,6 +21,7 @@ export function toProfileUpdate(formData: FormData): ProfileUpdate {
     work_modes: readList(formData, "work_modes") as WorkMode[],
     countries: readList(formData, "countries"),
     open_to_remote_abroad: readChecked(formData, "open_to_remote_abroad"),
+    offer_languages: readList(formData, "offer_languages"),
   };
 }
 

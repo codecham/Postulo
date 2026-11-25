@@ -24,6 +24,7 @@ def make_profile(**changes: object) -> Profile:
         "work_modes": ["hybrid"],
         "countries": ["BE"],
         "open_to_remote_abroad": True,
+        "offer_languages": ["fr", "en"],
     }
     return Profile(**(fields | changes))
 
@@ -37,6 +38,14 @@ def test_values_from_the_cv_win_and_missing_ones_keep_the_current_value() -> Non
     assert merged.headline == "Developer"
     assert merged.summary == "My own summary"
     assert merged.city == "Liège"
+
+
+def test_offer_languages_keep_the_current_value() -> None:
+    extracted = ProfileUpdate(languages=["nl"])
+
+    merged = merge_profile(make_profile(), extracted)
+
+    assert merged.offer_languages == ["fr", "en"]
 
 
 def test_lists_are_combined_without_duplicates() -> None:

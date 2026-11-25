@@ -1,7 +1,11 @@
 "use client";
 
 import { ChipList } from "@/components/ui/chip-list";
-import { inputClassName, labelClassName } from "@/components/ui/styles";
+import {
+  hintClassName,
+  inputClassName,
+  labelClassName,
+} from "@/components/ui/styles";
 import { useListState } from "@/components/ui/use-list-state";
 import type { Option } from "@/lib/forms";
 
@@ -11,6 +15,7 @@ type MultiSelectProps = {
   options: Option[];
   defaultValue?: string[];
   placeholder?: string;
+  hint?: string; // shown under the label
 };
 
 /**
@@ -23,6 +28,7 @@ export function MultiSelect({
   options,
   defaultValue = [],
   placeholder = "Add…",
+  hint,
 }: MultiSelectProps) {
   const [selected, setSelected] = useListState(defaultValue);
 
@@ -53,6 +59,7 @@ export function MultiSelect({
             </option>
           ))}
         </select>
+        {hint && <span className={hintClassName}>{hint}</span>}
       </label>
       <ChipList
         name={name}

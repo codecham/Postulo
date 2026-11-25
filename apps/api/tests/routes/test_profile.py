@@ -13,6 +13,7 @@ FULL_PROFILE = {
     "work_modes": ["remote", "hybrid"],
     "countries": ["BE"],
     "open_to_remote_abroad": True,
+    "offer_languages": ["fr", "en", "nl"],
 }
 
 
@@ -25,7 +26,18 @@ def test_a_new_user_gets_an_empty_profile(client: TestClient, login_as: LoginAs)
     body = response.json()
     assert body["full_name"] is None
     assert body["skills"] == []
-    assert body["open_to_remote_abroad"] is False
+
+
+def test_a_new_profile_searches_belgium_and_remote_jobs_in_french_or_english(
+    client: TestClient, login_as: LoginAs
+) -> None:
+    headers = login_as("alice@mail.com")
+
+    body = client.get("/profile/me", headers=headers).json()
+
+    assert body["countries"] == ["BE"]
+    assert body["open_to_remote_abroad"] is True
+    assert body["offer_languages"] == ["fr", "en"]
 
 
 def test_update_saves_the_whole_profile(client: TestClient, login_as: LoginAs) -> None:
