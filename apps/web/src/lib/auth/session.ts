@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
 
@@ -31,6 +32,24 @@ export async function deleteSession() {
   cookieStore.delete(SESSION_COOKIE);
 }
 
+export type AuthHeaders = { Authorization: string };
+
+/** The header that authenticates API calls, or null when nobody is logged in. */
+export async function getAuthHeaders(): Promise<AuthHeaders | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  return token ? { Authorization: `Bearer ${token}` } : null;
+}
+
+/** Same as getAuthHeaders, for pages and actions that need a logged-in user. */
+export async function requireAuthHeaders(): Promise<AuthHeaders> {
+  const headers = await getAuthHeaders();
+  if (!headers) {
+    redirect("/login");
+  }
+  return headers;
+}
+
 /**
  * The logged-in user, or null. Wrapped in React's `cache` so several components
  * can call it during one request while the API is only asked once.
@@ -38,13 +57,10 @@ export async function deleteSession() {
 export const getCurrentUser = cache(async (): Promise<User | null> => {
   // Always render at request time: the user and the API call must never be prerendered
   await connection();
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!token) {
+  const headers = await getAuthHeaders();
+  if (!headers) {
     return null;
   }
-  const { data } = await api.GET("/users/me", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const { data } = await api.GET("/users/me", { headers });
   return data ?? null; // an expired or invalid token gives a 401: treat as logged out
 });
