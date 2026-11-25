@@ -54,9 +54,13 @@ class CvExtraction(BaseModel):
 @dataclass(frozen=True)
 class ExtractionResult:
     extraction: CvExtraction
-    model: str
-    input_tokens: int
-    output_tokens: int
+    model: str  # who extracted it: an API model id, or CLAUDE_CODE_SOURCE
+    input_tokens: int | None = None  # None when the API was not called
+    output_tokens: int | None = None
+
+
+# Extraction made in the user's own Claude Code session (/import-cv), pasted as JSON
+CLAUDE_CODE_SOURCE = "claude-code"
 
 
 class CvExtractor(Protocol):

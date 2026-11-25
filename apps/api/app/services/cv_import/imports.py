@@ -21,7 +21,12 @@ from app.services.cv_import.errors import (
     ImportRateLimitError,
     NotACvError,
 )
-from app.services.cv_import.extraction import CvExtractor, ExtractionResult
+from app.services.cv_import.extraction import (
+    CLAUDE_CODE_SOURCE,
+    CvExtraction,
+    CvExtractor,
+    ExtractionResult,
+)
 from app.services.cv_import.merge import mark_known_experiences, merge_profile
 from app.services.cv_import.normalize import normalize_extraction
 from app.services.cv_import.pdf import validate_pdf
@@ -62,12 +67,31 @@ def start_import(
     except ExtractionFailedError:
         _save(db, CvImport(user_id=user_id, status=CvImportStatus.FAILED))
         raise
-    cv_import = _import_from_result(user_id, result)
+    return save_extraction(db, user_id, result)
+
+
+def start_import_from_extraction(
+    db: Session, user_id: uuid.UUID, extraction: CvExtraction, limits: ImportLimits
+) -> CvImport:
+    """Save a draft from an extraction made in Claude Code (no API call, no cost)."""
+    check_rate_limit(db, user_id, limits.per_hour)
+    return save_extraction(db, user_id, ExtractionResult(extraction, CLAUDE_CODE_SOURCE))
+
+
+def save_extraction(db: Session, user_id: uuid.UUID, result: ExtractionResult) -> CvImport:
+    """Save the draft to review, or raise NotACvError (the attempt is saved as failed)."""
+    cv_import = CvImport(
+        user_id=user_id,
+        status=CvImportStatus.FAILED,
+        model=result.model,
+        input_tokens=result.input_tokens,
+        output_tokens=result.output_tokens,
+    )
     if not result.extraction.is_cv:
         _save(db, cv_import)
         raise NotACvError
     cv_import.status = CvImportStatus.PENDING_REVIEW
-    cv_import.draft = build_draft(db, user_id, result).model_dump(mode="json")
+    cv_import.draft = build_draft(db, user_id, result.extraction).model_dump(mode="json")
     return _save(db, cv_import)
 
 
@@ -82,9 +106,9 @@ def check_rate_limit(db: Session, user_id: uuid.UUID, per_hour: int) -> None:
         raise ImportRateLimitError
 
 
-def build_draft(db: Session, user_id: uuid.UUID, result: ExtractionResult) -> CvImportDraft:
+def build_draft(db: Session, user_id: uuid.UUID, extraction: CvExtraction) -> CvImportDraft:
     """The user's current profile and experiences, completed with the CV."""
-    normalized = normalize_extraction(result.extraction)
+    normalized = normalize_extraction(extraction)
     current_profile = profiles.get_or_create_profile(db, user_id)
     current_experiences = experiences.list_experiences(db, user_id)
     return CvImportDraft(
@@ -115,16 +139,6 @@ def apply_import(db: Session, cv_import: CvImport, data: CvImportApply) -> CvImp
 def discard_import(db: Session, cv_import: CvImport) -> CvImport:
     _ensure_pending(cv_import)
     return _close(db, cv_import, CvImportStatus.DISCARDED)
-
-
-def _import_from_result(user_id: uuid.UUID, result: ExtractionResult) -> CvImport:
-    return CvImport(
-        user_id=user_id,
-        status=CvImportStatus.FAILED,
-        model=result.model,
-        input_tokens=result.input_tokens,
-        output_tokens=result.output_tokens,
-    )
 
 
 def _ensure_pending(cv_import: CvImport) -> None:

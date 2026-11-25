@@ -12,7 +12,7 @@ from app.models import CvImport
 from app.schemas.cv_import import CvImportApply, CvImportRead
 from app.services.cv_import import errors, imports
 from app.services.cv_import.claude_extractor import build_claude_extractor
-from app.services.cv_import.extraction import CvExtractor
+from app.services.cv_import.extraction import CvExtraction, CvExtractor
 
 router = APIRouter(prefix="/profile/imports", tags=["cv imports"])
 
@@ -111,6 +111,26 @@ def start_import(
     pdf = file.file.read(limits.max_bytes + 1)
     try:
         cv_import = imports.start_import(db, user.id, pdf, extractor, limits)
+    except errors.CvImportError as error:
+        raise to_http_error(error) from None
+    return CvImportRead.model_validate(cv_import)
+
+
+@router.post(
+    "/from-extraction",
+    status_code=status.HTTP_201_CREATED,
+    responses=documented(errors.NotACvError, errors.ImportRateLimitError),
+)
+def start_import_from_extraction(
+    extraction: CvExtraction, user: CurrentUser, db: DbSession
+) -> CvImportRead:
+    """Create a draft from a CV already extracted in Claude Code (`/import-cv` command).
+
+    Free: the extraction used the user's own Claude plan, the API calls no AI.
+    """
+    limits = imports.ImportLimits.from_settings(get_settings())
+    try:
+        cv_import = imports.start_import_from_extraction(db, user.id, extraction, limits)
     except errors.CvImportError as error:
         raise to_http_error(error) from None
     return CvImportRead.model_validate(cv_import)

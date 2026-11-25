@@ -228,3 +228,41 @@ def test_discard_closes_the_import_without_saving(
     assert response.status_code == 200
     assert response.json()["status"] == "discarded"
     assert client.get("/profile/me", headers=headers).json()["full_name"] is None
+
+
+# --- From an extraction made in Claude Code ---
+
+
+def test_an_extraction_from_claude_code_creates_a_draft_without_calling_the_ai(
+    client: TestClient, login_as: LoginAs, fake_extractor: FakeCvExtractor
+) -> None:
+    headers = login_as("alice@mail.com")
+    extraction = make_extraction().model_dump(mode="json")
+
+    response = client.post("/profile/imports/from-extraction", json=extraction, headers=headers)
+
+    assert response.status_code == 201
+    assert response.json()["draft"]["profile"]["full_name"] == "Alice Martin"
+    assert fake_extractor.calls == 0
+
+
+def test_an_extraction_that_does_not_match_the_schema_is_rejected(
+    client: TestClient, login_as: LoginAs
+) -> None:
+    headers = login_as("alice@mail.com")
+
+    response = client.post(
+        "/profile/imports/from-extraction", json={"full_name": "Alice"}, headers=headers
+    )
+
+    assert response.status_code == 422
+
+
+def test_an_extraction_that_is_not_a_cv_is_rejected(client: TestClient, login_as: LoginAs) -> None:
+    headers = login_as("alice@mail.com")
+    extraction = make_extraction(is_cv=False).model_dump(mode="json")
+
+    response = client.post("/profile/imports/from-extraction", json=extraction, headers=headers)
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "This document does not look like a CV or a profile"

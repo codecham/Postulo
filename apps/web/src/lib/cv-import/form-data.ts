@@ -1,5 +1,6 @@
-import { readList } from "@/lib/forms";
+import { readList, readText } from "@/lib/forms";
 import type {
+  CvExtraction,
   CvImportApply,
   CvImportDraft,
   DraftExperience,
@@ -22,6 +23,24 @@ export function toCvImportApply(
       .filter((_, index) => selected.has(index))
       .map(toExperienceInput),
   };
+}
+
+/**
+ * The JSON pasted from Claude Code, or null when it is not a JSON object.
+ * Its fields are checked by the API.
+ */
+export function readExtraction(
+  formData: FormData,
+  name: string,
+): CvExtraction | null {
+  try {
+    const value: unknown = JSON.parse(readText(formData, name));
+    return typeof value === "object" && value !== null && !Array.isArray(value)
+      ? (value as CvExtraction)
+      : null;
+  } catch {
+    return null; // not JSON at all
+  }
 }
 
 /** The uploaded file, or null when the form has no (or an empty) file. */

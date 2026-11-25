@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { requireData, toFormState } from "@/lib/api/results";
 import { requireAuthHeaders } from "@/lib/auth/session";
-import { readFile, toCvImportApply } from "@/lib/cv-import/form-data";
+import {
+  readExtraction,
+  readFile,
+  toCvImportApply,
+} from "@/lib/cv-import/form-data";
 import { getCvImport } from "@/lib/cv-import/queries";
 import type { FormState } from "@/lib/forms";
 
@@ -22,6 +26,29 @@ export async function startCvImport(
   const result = await api.POST("/profile/imports", {
     headers,
     body: toMultipartBody(file),
+  });
+  if (!result.data) {
+    return toFormState(result, "");
+  }
+  redirect(`/profile/import/${result.data.id}`);
+}
+
+/** Create the draft from the JSON that the /import-cv Claude Code command produced. */
+export async function startCvImportFromClaudeCode(
+  _previousState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const extraction = readExtraction(formData, "extraction");
+  if (!extraction) {
+    return {
+      status: "error",
+      message: "This is not the JSON from Claude Code. Paste it again, whole.",
+    };
+  }
+  const headers = await requireAuthHeaders();
+  const result = await api.POST("/profile/imports/from-extraction", {
+    headers,
+    body: extraction,
   });
   if (!result.data) {
     return toFormState(result, "");

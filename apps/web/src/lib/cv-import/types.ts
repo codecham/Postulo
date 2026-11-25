@@ -6,3 +6,4 @@ export type CvImport = Schemas["CvImportRead"];
 export type CvImportDraft = Schemas["CvImportDraft"];
 export type DraftExperience = Schemas["DraftExperience"];
 export type CvImportApply = Schemas["CvImportApply"];
+export type CvExtraction = Schemas["CvExtraction"];

@@ -12,8 +12,8 @@ export function CvUploadForm() {
       pendingLabel="Analysing your CV… (up to a minute)"
     >
       <FormSection
-        title="Your CV"
-        description="A CV, or your LinkedIn profile saved as PDF (on your profile: More → Save to PDF)."
+        title="Upload your CV"
+        description="A CV, or your LinkedIn profile saved as PDF (on your profile: More → Save to PDF). Read by the Claude API: this server needs an API key."
       >
         <FileField
           label="PDF file"

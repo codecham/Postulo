@@ -129,6 +129,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/profile/imports/from-extraction": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Start Import From Extraction
+     * @description Create a draft from a CV already extracted in Claude Code (`/import-cv` command).
+     *
+     *     Free: the extraction used the user's own Claude plan, the API calls no AI.
+     */
+    post: operations["start_import_from_extraction_profile_imports_from_extraction_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/profile/imports/{import_id}": {
     parameters: {
       query?: never;
@@ -251,6 +273,66 @@ export interface components {
     Body_start_import_profile_imports_post: {
       /** File */
       file: string;
+    };
+    /** CvExtraction */
+    CvExtraction: {
+      /**
+       * Is Cv
+       * @description False if the document is not a CV, a resume or a professional profile
+       */
+      is_cv: boolean;
+      /** Full Name */
+      full_name: string | null;
+      /**
+       * Headline
+       * @description Short professional title, such as the CV title
+       */
+      headline: string | null;
+      /**
+       * Summary
+       * @description Profile or 'about' section, in the CV language
+       */
+      summary: string | null;
+      /**
+       * City
+       * @description City where the person lives
+       */
+      city: string | null;
+      /**
+       * Skills
+       * @description Professional skills, tools and technologies
+       */
+      skills: string[];
+      /**
+       * Languages
+       * @description Spoken languages as ISO 639-1 codes, such as 'fr' or 'en'
+       */
+      languages: string[];
+      /**
+       * Desired Titles
+       * @description Job titles the person is looking for; if not stated, up to 3 titles close to their most recent roles
+       */
+      desired_titles: string[];
+      /**
+       * Work Modes
+       * @description Only if the CV states a preference
+       */
+      work_modes: components["schemas"]["WorkMode"][];
+      /**
+       * Countries
+       * @description Countries where the person wants to work, as ISO 3166-1 alpha-2 codes; empty unless the CV states it
+       */
+      countries: string[];
+      /**
+       * Open To Remote Abroad
+       * @description True only if the CV says the person accepts remote work for a foreign company
+       */
+      open_to_remote_abroad: boolean;
+      /**
+       * Experiences
+       * @description Work experiences, newest first
+       */
+      experiences: components["schemas"]["ExtractedExperience"][];
     };
     /**
      * CvImportApply
@@ -390,6 +472,41 @@ export interface components {
       end_date?: string | null;
       /** Description */
       description?: string | null;
+    };
+    /** ExtractedExperience */
+    ExtractedExperience: {
+      /**
+       * Title
+       * @description Job title, as written in the CV
+       */
+      title: string;
+      /** Company */
+      company: string;
+      /**
+       * Location
+       * @description City and/or country of the job
+       */
+      location: string | null;
+      /**
+       * Start Month
+       * @description Start month as YYYY-MM, or null if unknown
+       */
+      start_month: string | null;
+      /**
+       * End Month
+       * @description End month as YYYY-MM, or null for a current job or an unknown date
+       */
+      end_month: string | null;
+      /**
+       * Is Current
+       * @description True if the person still holds this job
+       */
+      is_current: boolean;
+      /**
+       * Description
+       * @description Responsibilities and achievements
+       */
+      description: string | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -807,6 +924,44 @@ export interface operations {
       };
       /** @description CV import is not configured */
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  start_import_from_extraction_profile_imports_from_extraction_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CvExtraction"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CvImportRead"];
+        };
+      };
+      /** @description This document does not look like a CV or a profile */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Too many imports in the last hour, try again later */
+      429: {
         headers: {
           [name: string]: unknown;
         };
