@@ -9,7 +9,7 @@ from sqlalchemy import delete, func, or_, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.models import JobMatch, JobOffer
+from app.models import JobMatch, JobOffer, MatchStatus
 from app.services.job_search.criteria import SearchCriteria
 from app.services.job_search.filters import fits_criteria
 from app.services.job_search.scoring import find_skills, score_offer
@@ -77,11 +77,17 @@ def score(offer: JobOffer, similarity: float, criteria: SearchCriteria) -> Score
 def save_matches(db: Session, user_id: uuid.UUID, matches: Sequence[ScoredOffer]) -> None:
     """Make these the user's matches: the profile or the criteria may have changed.
 
-    Known matches are updated in place, so they keep their creation date.
+    Known matches are updated in place, so they keep their creation date and status.
+    Only new matches that no longer fit are removed: the saved ones stay on the
+    shortlist, and the dismissed ones stay hidden even if they fit again later.
     """
     offer_ids = [item.offer.id for item in matches]
     db.execute(
-        delete(JobMatch).where(JobMatch.user_id == user_id, JobMatch.offer_id.not_in(offer_ids))
+        delete(JobMatch).where(
+            JobMatch.user_id == user_id,
+            JobMatch.status == MatchStatus.NEW,
+            JobMatch.offer_id.not_in(offer_ids),
+        )
     )
     if not matches:
         db.commit()
@@ -111,13 +117,3 @@ def save_matches(db: Session, user_id: uuid.UUID, matches: Sequence[ScoredOffer]
         )
     )
     db.commit()
-
-
-def list_matches(db: Session, user_id: uuid.UUID, limit: int) -> Sequence[JobMatch]:
-    """The user's best matches first, newest first for equal scores."""
-    return db.scalars(
-        select(JobMatch)
-        .where(JobMatch.user_id == user_id)
-        .order_by(JobMatch.score.desc(), JobMatch.created_at.desc())
-        .limit(limit)
-    ).all()

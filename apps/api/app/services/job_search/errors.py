@@ -19,3 +19,7 @@ class ProfileIncompleteError(JobSearchError):
 
 class SourceError(JobSearchError):
     """A job board could not be reached or answered something unexpected."""
+
+
+class MatchNotFoundError(JobSearchError):
+    """No match with this id belongs to the user."""

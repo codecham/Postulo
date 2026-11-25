@@ -1,10 +1,13 @@
 """Builders shared by the job search tests."""
 
+import uuid
+from collections.abc import Sequence
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import JobOffer, Profile, User
+from app.models import JobMatch, JobOffer, MatchStatus, Profile, User
 from app.services import profiles
 from app.services.job_search.criteria import SearchCriteria
 
@@ -53,3 +56,32 @@ def make_offer(**changes: Any) -> JobOffer:
 
 def profile_of(db: Session, user: User) -> Profile:
     return profiles.get_or_create_profile(db, user.id)
+
+
+def add_match(
+    db: Session,
+    user: User,
+    score: int = 50,
+    status: MatchStatus = MatchStatus.NEW,
+    **offer_changes: Any,
+) -> JobMatch:
+    """A saved offer and the user's match with it, without any embedding."""
+    offer = make_offer(**({"external_id": str(uuid.uuid4())} | offer_changes))
+    match = JobMatch(
+        user_id=user.id,
+        offer=offer,
+        score=score,
+        similarity=0.6,
+        matched_skills=["Python"],
+        status=status,
+    )
+    db.add(match)
+    db.commit()
+    return match
+
+
+def matches_of(db: Session, user_id: uuid.UUID) -> Sequence[JobMatch]:
+    """Every match of the user, best score first."""
+    return db.scalars(
+        select(JobMatch).where(JobMatch.user_id == user_id).order_by(JobMatch.score.desc())
+    ).all()

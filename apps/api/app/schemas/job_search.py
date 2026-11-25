@@ -54,13 +54,3 @@ class JobOfferRead(BaseModel):
     tags: list[str]
     salary: str | None
     published_at: datetime | None
-
-
-class JobMatchRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: uuid.UUID
-    score: int
-    matched_skills: list[str]
-    created_at: datetime
-    offer: JobOfferRead
