@@ -60,7 +60,7 @@ export async function register(
   if (!(await startSession(email, password))) {
     return { error: "Your account was created, but logging in failed." };
   }
-  redirect("/account");
+  redirect("/profile"); // first thing to do: fill in the profile
 }
 
 export async function logout() {

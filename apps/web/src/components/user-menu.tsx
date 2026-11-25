@@ -22,6 +22,7 @@ export async function UserMenu() {
 
   return (
     <div className="flex items-center gap-4 text-sm">
+      <Link href="/profile">Profile</Link>
       <Link href="/account">{user.email}</Link>
       <form action={logout}>
         <button type="submit" className="underline">
