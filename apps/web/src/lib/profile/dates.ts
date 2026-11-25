@@ -17,11 +17,17 @@ const monthFormat = new Intl.DateTimeFormat("en", {
   timeZone: "UTC", // the dates have no time: never shift them to the local zone
 });
 
-/** "Mar 2022 – Jun 2024", or "Mar 2022 – Present" for a current job. */
+/**
+ * "Mar 2022 – Jun 2024", or "Mar 2022 – Present" when it is not over.
+ * Without a start date: only the end ("Jun 2024"), or "" when no date is known.
+ */
 export function formatPeriod(
-  startDate: string,
+  startDate: string | null,
   endDate: string | null,
 ): string {
-  const end = endDate ? monthFormat.format(new Date(endDate)) : "Present";
-  return `${monthFormat.format(new Date(startDate))} – ${end}`;
+  const end = endDate ? monthFormat.format(new Date(endDate)) : null;
+  if (!startDate) {
+    return end ?? "";
+  }
+  return `${monthFormat.format(new Date(startDate))} – ${end ?? "Present"}`;
 }

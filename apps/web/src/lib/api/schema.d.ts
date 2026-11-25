@@ -261,6 +261,42 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/educations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List My Educations */
+    get: operations["list_my_educations_educations_get"];
+    put?: never;
+    /** Create Education */
+    post: operations["create_education_educations_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/educations/{education_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Update Education */
+    put: operations["update_education_educations__education_id__put"];
+    post?: never;
+    /** Delete Education */
+    delete: operations["delete_education_educations__education_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -353,6 +389,11 @@ export interface components {
        * @description Work experiences, newest first
        */
       experiences: components["schemas"]["ExtractedExperience"][];
+      /**
+       * Education
+       * @description Schools, degrees and trainings (bootcamps, coding schools...), newest first
+       */
+      education: components["schemas"]["ExtractedEducation"][];
     };
     /**
      * CvImportApply
@@ -365,6 +406,11 @@ export interface components {
        * @default []
        */
       experiences?: components["schemas"]["ExperienceCreate"][];
+      /**
+       * Educations
+       * @default []
+       */
+      educations?: components["schemas"]["EducationCreate"][];
     };
     /**
      * CvImportDraft
@@ -374,6 +420,11 @@ export interface components {
       profile: components["schemas"]["ProfileUpdate"];
       /** Experiences */
       experiences: components["schemas"]["DraftExperience"][];
+      /**
+       * Educations
+       * @default []
+       */
+      educations?: components["schemas"]["DraftEducation"][];
       /** Warnings */
       warnings: string[];
     };
@@ -414,6 +465,31 @@ export interface components {
       database: "ok";
     };
     /**
+     * DraftEducation
+     * @description An education found in the CV.
+     */
+    DraftEducation: {
+      /** School */
+      school: string;
+      /** Degree */
+      degree?: string | null;
+      /** Field Of Study */
+      field_of_study?: string | null;
+      /** Location */
+      location?: string | null;
+      /** Start Date */
+      start_date?: string | null;
+      /** End Date */
+      end_date?: string | null;
+      /** Description */
+      description?: string | null;
+      /**
+       * Already Exists
+       * @default false
+       */
+      already_exists?: boolean;
+    };
+    /**
      * DraftExperience
      * @description An experience found in the CV.
      */
@@ -438,6 +514,65 @@ export interface components {
        * @default false
        */
       already_exists?: boolean;
+    };
+    /** EducationCreate */
+    EducationCreate: {
+      /** School */
+      school: string;
+      /** Degree */
+      degree?: string | null;
+      /** Field Of Study */
+      field_of_study?: string | null;
+      /** Location */
+      location?: string | null;
+      /** Start Date */
+      start_date?: string | null;
+      /** End Date */
+      end_date?: string | null;
+      /** Description */
+      description?: string | null;
+    };
+    /** EducationRead */
+    EducationRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** School */
+      school: string;
+      /** Degree */
+      degree: string | null;
+      /** Field Of Study */
+      field_of_study: string | null;
+      /** Location */
+      location: string | null;
+      /** Start Date */
+      start_date: string | null;
+      /** End Date */
+      end_date: string | null;
+      /** Description */
+      description: string | null;
+    };
+    /**
+     * EducationUpdate
+     * @description Same fields as EducationCreate: PUT replaces the whole education.
+     */
+    EducationUpdate: {
+      /** School */
+      school: string;
+      /** Degree */
+      degree?: string | null;
+      /** Field Of Study */
+      field_of_study?: string | null;
+      /** Location */
+      location?: string | null;
+      /** Start Date */
+      start_date?: string | null;
+      /** End Date */
+      end_date?: string | null;
+      /** Description */
+      description?: string | null;
     };
     /** ExperienceCreate */
     ExperienceCreate: {
@@ -500,6 +635,41 @@ export interface components {
       end_date?: string | null;
       /** Description */
       description?: string | null;
+    };
+    /** ExtractedEducation */
+    ExtractedEducation: {
+      /**
+       * School
+       * @description School, university or training organization
+       */
+      school: string;
+      /**
+       * Degree
+       * @description Degree or diploma, such as 'Master' or 'RNCP level 7'
+       */
+      degree: string | null;
+      /**
+       * Field Of Study
+       * @description Field or program, such as 'Computer science'
+       */
+      field_of_study: string | null;
+      /** Location */
+      location: string | null;
+      /**
+       * Start Month
+       * @description Start month as YYYY-MM, or null if unknown
+       */
+      start_month: string | null;
+      /**
+       * End Month
+       * @description End or graduation month as YYYY-MM, or null if ongoing or unknown
+       */
+      end_month: string | null;
+      /**
+       * Description
+       * @description Projects, specialization, honors
+       */
+      description: string | null;
     };
     /** ExtractedExperience */
     ExtractedExperience: {
@@ -1263,6 +1433,137 @@ export interface operations {
         content?: never;
       };
       /** @description Experience not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_my_educations_educations_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EducationRead"][];
+        };
+      };
+    };
+  };
+  create_education_educations_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["EducationCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EducationRead"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_education_educations__education_id__put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        education_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["EducationUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EducationRead"];
+        };
+      };
+      /** @description Education not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_education_educations__education_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        education_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Education not found */
       404: {
         headers: {
           [name: string]: unknown;

@@ -6,7 +6,11 @@ import { api } from "@/lib/api/client";
 import { requireSuccess, toFormState } from "@/lib/api/results";
 import { requireAuthHeaders } from "@/lib/auth/session";
 import type { FormState } from "@/lib/forms";
-import { toExperienceInput, toProfileUpdate } from "@/lib/profile/form-data";
+import {
+  toEducationInput,
+  toExperienceInput,
+  toProfileUpdate,
+} from "@/lib/profile/form-data";
 
 // Each action re-reads the session: the API checks the token, never the browser.
 // After a change, refresh() re-renders the page with the saved data.
@@ -54,6 +58,42 @@ export async function deleteExperience(experienceId: string): Promise<void> {
   const result = await api.DELETE("/experiences/{experience_id}", {
     headers,
     params: { path: { experience_id: experienceId } },
+  });
+  requireSuccess(result);
+  refresh();
+}
+
+export async function createEducation(
+  _previousState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const headers = await requireAuthHeaders();
+  const result = await api.POST("/educations", {
+    headers,
+    body: toEducationInput(formData),
+  });
+  return refreshOnSuccess(toFormState(result, "Education added."));
+}
+
+export async function updateEducation(
+  educationId: string,
+  _previousState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const headers = await requireAuthHeaders();
+  const result = await api.PUT("/educations/{education_id}", {
+    headers,
+    params: { path: { education_id: educationId } },
+    body: toEducationInput(formData),
+  });
+  return refreshOnSuccess(toFormState(result, "Education saved."));
+}
+
+export async function deleteEducation(educationId: string): Promise<void> {
+  const headers = await requireAuthHeaders();
+  const result = await api.DELETE("/educations/{education_id}", {
+    headers,
+    params: { path: { education_id: educationId } },
   });
   requireSuccess(result);
   refresh();
