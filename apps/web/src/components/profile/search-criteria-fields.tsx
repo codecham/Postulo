@@ -4,9 +4,9 @@ import { FormSection } from "@/components/ui/form-section";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { TagInput } from "@/components/ui/tag-input";
 import { COUNTRY_OPTIONS, WORK_MODE_OPTIONS } from "@/lib/profile/options";
-import type { Profile } from "@/lib/profile/types";
+import type { ProfileValues } from "@/lib/profile/types";
 
-export function SearchCriteriaFields({ profile }: { profile: Profile }) {
+export function SearchCriteriaFields({ profile }: { profile: ProfileValues }) {
   return (
     <FormSection
       title="What you are looking for"

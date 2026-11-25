@@ -2,9 +2,9 @@ import { FormSection } from "@/components/ui/form-section";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { TagInput } from "@/components/ui/tag-input";
 import { LANGUAGE_OPTIONS } from "@/lib/profile/options";
-import type { Profile } from "@/lib/profile/types";
+import type { ProfileValues } from "@/lib/profile/types";
 
-export function SkillsFields({ profile }: { profile: Profile }) {
+export function SkillsFields({ profile }: { profile: ProfileValues }) {
   return (
     <FormSection title="Skills and languages">
       <TagInput

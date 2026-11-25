@@ -107,6 +107,82 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/profile/imports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Start Import
+     * @description Analyse a CV or LinkedIn PDF and return a draft of the profile to review.
+     *
+     *     Nothing is saved in the profile until the draft is applied. The PDF is not stored.
+     */
+    post: operations["start_import_profile_imports_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/profile/imports/{import_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read Import */
+    get: operations["read_import_profile_imports__import_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/profile/imports/{import_id}/apply": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Apply Import
+     * @description Save the reviewed profile and the chosen experiences, in one transaction.
+     */
+    post: operations["apply_import_profile_imports__import_id__apply_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/profile/imports/{import_id}/discard": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Discard Import */
+    post: operations["discard_import_profile_imports__import_id__discard_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/experiences": {
     parameters: {
       query?: never;
@@ -171,6 +247,54 @@ export interface components {
        */
       client_secret?: string | null;
     };
+    /** Body_start_import_profile_imports_post */
+    Body_start_import_profile_imports_post: {
+      /** File */
+      file: string;
+    };
+    /**
+     * CvImportApply
+     * @description Body of POST /profile/imports/{id}/apply: the draft, as checked by the user.
+     */
+    CvImportApply: {
+      profile: components["schemas"]["ProfileUpdate"];
+      /**
+       * Experiences
+       * @default []
+       */
+      experiences?: components["schemas"]["ExperienceCreate"][];
+    };
+    /**
+     * CvImportDraft
+     * @description What the import proposes: the current profile completed with the CV.
+     */
+    CvImportDraft: {
+      profile: components["schemas"]["ProfileUpdate"];
+      /** Experiences */
+      experiences: components["schemas"]["DraftExperience"][];
+      /** Warnings */
+      warnings: string[];
+    };
+    /** CvImportRead */
+    CvImportRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      status: components["schemas"]["CvImportStatus"];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      draft: components["schemas"]["CvImportDraft"] | null;
+    };
+    /**
+     * CvImportStatus
+     * @enum {string}
+     */
+    CvImportStatus: "pending_review" | "applied" | "discarded" | "failed";
     /** DatabaseHealthResponse */
     DatabaseHealthResponse: {
       /**
@@ -178,6 +302,32 @@ export interface components {
        * @constant
        */
       database: "ok";
+    };
+    /**
+     * DraftExperience
+     * @description An experience found in the CV.
+     */
+    DraftExperience: {
+      /** Title */
+      title: string;
+      /** Company */
+      company: string;
+      /** Location */
+      location?: string | null;
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string;
+      /** End Date */
+      end_date?: string | null;
+      /** Description */
+      description?: string | null;
+      /**
+       * Already Exists
+       * @default false
+       */
+      already_exists?: boolean;
     };
     /** ExperienceCreate */
     ExperienceCreate: {
@@ -586,6 +736,204 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ProfileRead"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  start_import_profile_imports_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_start_import_profile_imports_post"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CvImportRead"];
+        };
+      };
+      /** @description The file is too large */
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The file is not a PDF */
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The PDF cannot be read (damaged or password-protected) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Too many imports in the last hour, try again later */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The CV analysis failed, try again later */
+      502: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description CV import is not configured */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  read_import_profile_imports__import_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        import_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CvImportRead"];
+        };
+      };
+      /** @description Import not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  apply_import_profile_imports__import_id__apply_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        import_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CvImportApply"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CvImportRead"];
+        };
+      };
+      /** @description Import not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description This import was already applied or discarded */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  discard_import_profile_imports__import_id__discard_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        import_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CvImportRead"];
+        };
+      };
+      /** @description Import not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description This import was already applied or discarded */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {

@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    serverActions: {
+      // Room for a 5 MB CV upload (the default limit is 1 MB)
+      bodySizeLimit: "6mb",
+    },
+  },
   turbopack: {
     rules: {
       "*.css": {
