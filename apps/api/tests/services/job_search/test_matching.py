@@ -2,10 +2,12 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.services.job_search.matching import list_matches, match_offers, nearest_offers
+from app.models import MatchStatus
+from app.services.job_search import dashboard
+from app.services.job_search.matching import match_offers, nearest_offers
 from app.services.job_search.offers import embed_pending_offers, save_offers
 from tests.fakes import FakeEmbedder, make_collected_offer
-from tests.services.job_search.helpers import create_user, make_criteria
+from tests.services.job_search.helpers import create_user, make_criteria, matches_of
 
 PROFILE_TEXT = "Python developer FastAPI PostgreSQL backend API"
 
@@ -50,7 +52,7 @@ def test_match_offers_saves_the_offers_that_fit(db: Session) -> None:
 
     count = match_offers(db, user.id, make_criteria(), profile_vector(), min_score=40)
 
-    matches = list_matches(db, user.id, limit=10)
+    matches = matches_of(db, user.id)
     assert count == 1
     assert [match.offer.external_id for match in matches] == ["good"]
     assert matches[0].matched_skills == ["Python", "FastAPI"]
@@ -63,7 +65,7 @@ def test_matching_again_updates_the_score_instead_of_duplicating(db: Session) ->
 
     match_offers(db, user.id, make_criteria(), profile_vector(), min_score=0)
 
-    [match] = list_matches(db, user.id, limit=10)
+    [match] = matches_of(db, user.id)
     assert match.matched_skills == ["Python", "FastAPI"]
 
 
@@ -74,7 +76,7 @@ def test_offers_that_no_longer_fit_are_removed_from_the_matches(db: Session) -> 
 
     match_offers(db, user.id, make_criteria(offer_languages=("nl",)), profile_vector(), 0)
 
-    assert list_matches(db, user.id, limit=10) == []
+    assert matches_of(db, user.id) == []
 
 
 def test_users_only_see_their_own_matches(db: Session) -> None:
@@ -84,4 +86,30 @@ def test_users_only_see_their_own_matches(db: Session) -> None:
 
     match_offers(db, alice.id, make_criteria(), profile_vector(), min_score=0)
 
-    assert list_matches(db, bob.id, limit=10) == []
+    assert matches_of(db, bob.id) == []
+
+
+def test_saved_matches_stay_when_they_no_longer_fit(db: Session) -> None:
+    user = create_user(db)
+    save_embedded(db, make_collected_offer(title="Python developer FastAPI backend API"))
+    match_offers(db, user.id, make_criteria(), profile_vector(), min_score=0)
+    [match] = matches_of(db, user.id)
+    dashboard.set_status(db, user.id, match.id, MatchStatus.SAVED)
+
+    match_offers(db, user.id, make_criteria(offer_languages=("nl",)), profile_vector(), 0)
+
+    assert [item.id for item in matches_of(db, user.id)] == [match.id]
+
+
+def test_a_new_search_keeps_the_status_of_known_matches(db: Session) -> None:
+    user = create_user(db)
+    save_embedded(db, make_collected_offer(title="Python developer FastAPI backend API"))
+    match_offers(db, user.id, make_criteria(), profile_vector(), min_score=0)
+    [match] = matches_of(db, user.id)
+    dashboard.set_status(db, user.id, match.id, MatchStatus.DISMISSED)
+
+    match_offers(db, user.id, make_criteria(), profile_vector(), min_score=0)
+
+    [match] = matches_of(db, user.id)
+    db.refresh(match)
+    assert match.status == MatchStatus.DISMISSED

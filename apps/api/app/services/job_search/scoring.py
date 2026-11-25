@@ -17,11 +17,16 @@ SKILLS_FOR_FULL_BONUS = 5
 
 
 def score_offer(similarity: float, matched_skills: int, total_skills: int) -> int:
-    meaning = _scale(similarity, SIMILARITY_FLOOR, SIMILARITY_CEILING)
+    meaning = _meaning(similarity)
     if total_skills == 0:
         return round(100 * meaning)
     skills = min(matched_skills / min(total_skills, SKILLS_FOR_FULL_BONUS), 1.0)
     return round(100 * ((1 - SKILLS_WEIGHT) * meaning + SKILLS_WEIGHT * skills))
+
+
+def relevance(similarity: float) -> int:
+    """The meaning part of the score alone, from 0 to 100: how close the offer is."""
+    return round(100 * _meaning(similarity))
 
 
 def find_skills(text: str, skills: Iterable[str]) -> list[str]:
@@ -33,6 +38,10 @@ def _mentions(text: str, skill: str) -> bool:
     # \b fails around symbols ("C++", ".NET"): look for non-word neighbours instead
     pattern = rf"(?<!\w){re.escape(skill)}(?!\w)"
     return re.search(pattern, text, re.IGNORECASE) is not None
+
+
+def _meaning(similarity: float) -> float:
+    return _scale(similarity, SIMILARITY_FLOOR, SIMILARITY_CEILING)
 
 
 def _scale(value: float, low: float, high: float) -> float:

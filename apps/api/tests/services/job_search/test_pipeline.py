@@ -2,10 +2,9 @@ from sqlalchemy.orm import Session
 
 from app.models import JobSearchRun, JobSearchRunStatus
 from app.services.job_search import runs
-from app.services.job_search.matching import list_matches
 from app.services.job_search.pipeline import SearchTools, execute_run
 from tests.fakes import FakeEmbedder, FakeJobSource, make_collected_offer
-from tests.services.job_search.helpers import create_user
+from tests.services.job_search.helpers import create_user, matches_of
 
 GOOD_OFFER = make_collected_offer(
     title="Python developer", description="Python FastAPI backend developer for our API."
@@ -33,9 +32,7 @@ def test_a_search_collects_offers_and_saves_matches(db: Session) -> None:
     assert run.status == JobSearchRunStatus.SUCCEEDED
     assert (run.offers_found, run.offers_new, run.matches_found) == (1, 1, 1)
     assert source.criteria[0].keywords == ("Python developer",)
-    assert [match.offer.title for match in list_matches(db, run.user_id, 10)] == [
-        "Python developer"
-    ]
+    assert [match.offer.title for match in matches_of(db, run.user_id)] == ["Python developer"]
 
 
 def test_a_failing_job_board_does_not_stop_the_others(db: Session) -> None:

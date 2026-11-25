@@ -1,21 +1,20 @@
-"""Job search: see the last search, start one, read the matching offers.
+"""Job search: see the last search and start one. The matches are in job_matches.py.
 
 The searches themselves run in the worker (app/worker.py), not in the API.
 """
 
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.core.config import get_settings
 from app.core.dependencies import CurrentUser, DbSession
 from app.schemas.job_search import (
-    JobMatchRead,
     JobSearchOverview,
     JobSearchRunRead,
     JobSourceRead,
 )
-from app.services.job_search import errors, matching, runs
+from app.services.job_search import errors, runs
 from app.services.job_search.sources.registry import source_infos
 
 router = APIRouter(prefix="/job-search", tags=["job search"])
@@ -69,11 +68,3 @@ def start_search(user: CurrentUser, db: DbSession) -> JobSearchRunRead:
     except errors.JobSearchError as error:
         raise to_http_error(error) from None
     return JobSearchRunRead.model_validate(run)
-
-
-@router.get("/matches")
-def list_matches(
-    user: CurrentUser, db: DbSession, limit: Annotated[int, Query(ge=1, le=100)] = 20
-) -> list[JobMatchRead]:
-    """The offers that fit the profile best."""
-    return [JobMatchRead.model_validate(item) for item in matching.list_matches(db, user.id, limit)]

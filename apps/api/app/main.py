@@ -8,6 +8,7 @@ from app.routes import (
     educations,
     experiences,
     health,
+    job_matches,
     job_search,
     profile,
     users,
@@ -34,3 +35,4 @@ app.include_router(cv_imports.router)
 app.include_router(experiences.router)
 app.include_router(educations.router)
 app.include_router(job_search.router)
+app.include_router(job_matches.router)
