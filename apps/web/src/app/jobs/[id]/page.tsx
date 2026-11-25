@@ -9,6 +9,10 @@ import { OfferDescription } from "@/components/matches/offer-description";
 import { OfferFacts } from "@/components/matches/offer-facts";
 import { ScoreBadge } from "@/components/matches/score-badge";
 import { Card } from "@/components/ui/card";
+import {
+  getApplication,
+  getApplicationOptions,
+} from "@/lib/applications/queries";
 import { getMatch } from "@/lib/job-search/queries";
 
 export const metadata: Metadata = { title: "Job offer" };
@@ -31,7 +35,11 @@ async function MatchContent({
   params,
 }: Pick<PageProps<"/jobs/[id]">, "params">) {
   const { id } = await params;
-  const match = await getMatch(id);
+  const [match, application, options] = await Promise.all([
+    getMatch(id),
+    getApplication(id),
+    getApplicationOptions(),
+  ]);
   const { offer } = match;
 
   return (
@@ -47,7 +55,12 @@ async function MatchContent({
       <Card title="Why it matches">
         <MatchReasons match={match} />
       </Card>
-      <ApplyPanel offer={offer} />
+      <ApplyPanel
+        matchId={match.id}
+        offer={offer}
+        application={application}
+        canUseAi={options.ai_generation}
+      />
       <Card title="The offer">
         <OfferDescription description={offer.description} />
       </Card>

@@ -1,22 +1,60 @@
+import Link from "next/link";
+
+import { DocumentLinks } from "@/components/applications/document-links";
+import { WriteApplication } from "@/components/applications/write-application";
 import { Card } from "@/components/ui/card";
+import { secondaryButtonClassName } from "@/components/ui/styles";
+import type { Application } from "@/lib/applications/types";
 import type { JobOffer } from "@/lib/job-search/types";
 
-/**
- * Where the user goes from a match to an application. For now the offer's own page;
- * the tailored CV and cover letter will be generated here, in one click.
- */
-export function ApplyPanel({ offer }: { offer: JobOffer }) {
+type ApplyPanelProps = {
+  matchId: string;
+  offer: JobOffer;
+  application: Application | null; // null until one is written
+  canUseAi: boolean;
+};
+
+/** From a match to a sent application: write the documents, download them, apply. */
+export function ApplyPanel({
+  matchId,
+  offer,
+  application,
+  canUseAi,
+}: ApplyPanelProps) {
   return (
     <Card
       title="Apply"
-      description="Soon: a CV and a cover letter tailored to this offer, in one click."
+      description="A CV and a cover letter tailored to this offer, in its language."
     >
-      <div>
+      {application ? (
+        <>
+          <DocumentLinks application={application} />
+          <details className="text-sm">
+            <summary className="cursor-pointer text-gray-600 dark:text-gray-400">
+              Write a new version
+            </summary>
+            <div className="mt-4">
+              <WriteApplication matchId={matchId} canUseAi={canUseAi} />
+            </div>
+          </details>
+        </>
+      ) : (
+        <WriteApplication matchId={matchId} canUseAi={canUseAi} />
+      )}
+      <div className="flex flex-wrap gap-2">
+        {application && (
+          <Link
+            href={`/jobs/${matchId}/application`}
+            className={secondaryButtonClassName}
+          >
+            Review and edit
+          </Link>
+        )}
         <a
           href={offer.url}
           target="_blank"
           rel="noopener"
-          className="inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 dark:bg-white dark:text-gray-900"
+          className={secondaryButtonClassName}
         >
           Apply on {offer.source} ↗
         </a>
