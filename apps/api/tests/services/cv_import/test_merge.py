@@ -1,9 +1,14 @@
 from datetime import date
 
-from app.models import Experience, Profile
+from app.models import Education, Experience, Profile
+from app.schemas.education import EducationCreate
 from app.schemas.experience import ExperienceCreate
 from app.schemas.profile import ProfileUpdate
-from app.services.cv_import.merge import mark_known_experiences, merge_profile
+from app.services.cv_import.merge import (
+    mark_known_educations,
+    mark_known_experiences,
+    merge_profile,
+)
 
 
 def make_profile(**changes: object) -> Profile:
@@ -60,5 +65,17 @@ def test_experiences_the_user_already_has_are_marked() -> None:
     ]
 
     marked = mark_known_experiences(current, extracted)
+
+    assert [item.already_exists for item in marked] == [True, False]
+
+
+def test_educations_the_user_already_has_are_marked() -> None:
+    current = [Education(school="42 PARIS", degree="RNCP level 7")]
+    extracted = [
+        EducationCreate(school="42 Paris", degree="rncp level 7"),
+        EducationCreate(school="42 Paris", degree="Piscine"),
+    ]
+
+    marked = mark_known_educations(current, extracted)
 
     assert [item.already_exists for item in marked] == [True, False]

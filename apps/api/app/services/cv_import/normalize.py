@@ -11,6 +11,7 @@ from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
+from app.schemas.education import EducationCreate
 from app.schemas.experience import ExperienceCreate
 from app.schemas.fields import (
     LONG_TEXT_MAX_LENGTH,
@@ -20,7 +21,11 @@ from app.schemas.fields import (
     ShortText,
 )
 from app.schemas.profile import CountryCode, LanguageCode, ProfileUpdate
-from app.services.cv_import.extraction import CvExtraction, ExtractedExperience
+from app.services.cv_import.extraction import (
+    CvExtraction,
+    ExtractedEducation,
+    ExtractedExperience,
+)
 
 MONTH_PATTERN = re.compile(r"^(\d{4})-(\d{2})$")
 
@@ -29,6 +34,7 @@ MONTH_PATTERN = re.compile(r"^(\d{4})-(\d{2})$")
 class NormalizedCv:
     profile: ProfileUpdate
     experiences: list[ExperienceCreate]
+    educations: list[EducationCreate]
     warnings: list[str] = field(default_factory=list)
 
 
@@ -39,7 +45,12 @@ def normalize_extraction(extraction: CvExtraction) -> NormalizedCv:
         for item in extraction.experiences
         if (experience := normalize_experience(item, warnings)) is not None
     ]
-    return NormalizedCv(normalize_profile(extraction), experiences, warnings)
+    educations = [
+        education
+        for item in extraction.education
+        if (education := normalize_education(item, warnings)) is not None
+    ]
+    return NormalizedCv(normalize_profile(extraction), experiences, educations, warnings)
 
 
 def normalize_profile(extraction: CvExtraction) -> ProfileUpdate:
@@ -79,6 +90,28 @@ def normalize_experience(item: ExtractedExperience, warnings: list[str]) -> Expe
         )
     except ValidationError:
         warnings.append(f"{label}: skipped, the title or the company is missing.")
+        return None
+
+
+def normalize_education(item: ExtractedEducation, warnings: list[str]) -> EducationCreate | None:
+    """A valid education, or None (and a warning) when it cannot be saved as is."""
+    start_date = parse_month(item.start_month)
+    end_date = parse_month(item.end_month)
+    if start_date is not None and end_date is not None and end_date < start_date:
+        warnings.append(f"{item.school}: the end date was before the start date, it was removed.")
+        end_date = None
+    try:
+        return EducationCreate(
+            school=shorten(item.school, MEDIUM_TEXT_MAX_LENGTH),
+            degree=shorten(item.degree, MEDIUM_TEXT_MAX_LENGTH),
+            field_of_study=shorten(item.field_of_study, MEDIUM_TEXT_MAX_LENGTH),
+            location=shorten(item.location, SHORT_TEXT_MAX_LENGTH),
+            start_date=start_date,
+            end_date=end_date,
+            description=shorten(item.description, LONG_TEXT_MAX_LENGTH),
+        )
+    except ValidationError:
+        warnings.append("An education without a school name was skipped.")
         return None
 
 

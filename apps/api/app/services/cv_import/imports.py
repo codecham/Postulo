@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.models import CvImport, CvImportStatus
 from app.schemas.cv_import import CvImportApply, CvImportDraft
-from app.services import experiences, profiles
+from app.services import educations, experiences, profiles
 from app.services.cv_import.errors import (
     CvImportNotFoundError,
     CvImportNotPendingError,
@@ -27,7 +27,11 @@ from app.services.cv_import.extraction import (
     CvExtractor,
     ExtractionResult,
 )
-from app.services.cv_import.merge import mark_known_experiences, merge_profile
+from app.services.cv_import.merge import (
+    mark_known_educations,
+    mark_known_experiences,
+    merge_profile,
+)
 from app.services.cv_import.normalize import normalize_extraction
 from app.services.cv_import.pdf import validate_pdf
 
@@ -111,9 +115,11 @@ def build_draft(db: Session, user_id: uuid.UUID, extraction: CvExtraction) -> Cv
     normalized = normalize_extraction(extraction)
     current_profile = profiles.get_or_create_profile(db, user_id)
     current_experiences = experiences.list_experiences(db, user_id)
+    current_educations = educations.list_educations(db, user_id)
     return CvImportDraft(
         profile=merge_profile(current_profile, normalized.profile),
         experiences=mark_known_experiences(current_experiences, normalized.experiences),
+        educations=mark_known_educations(current_educations, normalized.educations),
         warnings=normalized.warnings,
     )
 
@@ -128,11 +134,12 @@ def get_import(db: Session, user_id: uuid.UUID, import_id: uuid.UUID) -> CvImpor
 
 
 def apply_import(db: Session, cv_import: CvImport, data: CvImportApply) -> CvImport:
-    """Save the reviewed profile and the chosen experiences, all or nothing."""
+    """Save the reviewed profile and the chosen experiences and education, all or nothing."""
     _ensure_pending(cv_import)
     profile = profiles.get_or_create_profile(db, cv_import.user_id)
     profiles.assign_profile(profile, data.profile)
     db.add_all(experiences.build_experience(cv_import.user_id, item) for item in data.experiences)
+    db.add_all(educations.build_education(cv_import.user_id, item) for item in data.educations)
     return _close(db, cv_import, CvImportStatus.APPLIED)
 
 

@@ -3,26 +3,42 @@ import type {
   CvExtraction,
   CvImportApply,
   CvImportDraft,
+  DraftEducation,
   DraftExperience,
 } from "@/lib/cv-import/types";
 import { toProfileUpdate } from "@/lib/profile/form-data";
-import type { ExperienceInput } from "@/lib/profile/types";
+import type { EducationInput, ExperienceInput } from "@/lib/profile/types";
 
-// Field name of the checkboxes that select the experiences to save
+// Field names of the checkboxes that select the draft items to save
 export const EXPERIENCE_FIELD = "experience";
+export const EDUCATION_FIELD = "education";
 
-/** The reviewed profile, and the draft experiences whose checkbox is checked. */
+/** The reviewed profile, and the draft items whose checkbox is checked. */
 export function toCvImportApply(
   formData: FormData,
   draft: CvImportDraft,
 ): CvImportApply {
-  const selected = new Set(readList(formData, EXPERIENCE_FIELD).map(Number));
   return {
     profile: toProfileUpdate(formData),
-    experiences: draft.experiences
-      .filter((_, index) => selected.has(index))
-      .map(toExperienceInput),
+    experiences: pickChecked(formData, EXPERIENCE_FIELD, draft.experiences).map(
+      toExperienceInput,
+    ),
+    educations: pickChecked(
+      formData,
+      EDUCATION_FIELD,
+      draft.educations ?? [],
+    ).map(toEducationInput),
   };
+}
+
+/** The items whose index was sent by a checked checkbox named `fieldName`. */
+function pickChecked<T>(
+  formData: FormData,
+  fieldName: string,
+  items: T[],
+): T[] {
+  const checked = new Set(readList(formData, fieldName).map(Number));
+  return items.filter((_, index) => checked.has(index));
 }
 
 /**
@@ -58,5 +74,18 @@ function toExperienceInput(experience: DraftExperience): ExperienceInput {
     start_date: experience.start_date,
     end_date: experience.end_date,
     description: experience.description,
+  };
+}
+
+/** The API rejects unknown fields: keep only those of an education. */
+function toEducationInput(education: DraftEducation): EducationInput {
+  return {
+    school: education.school,
+    degree: education.degree,
+    field_of_study: education.field_of_study,
+    location: education.location,
+    start_date: education.start_date,
+    end_date: education.end_date,
+    description: education.description,
   };
 }

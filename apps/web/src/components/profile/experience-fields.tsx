@@ -1,53 +1,10 @@
-import { ActionForm } from "@/components/ui/action-form";
-import { secondaryButtonClassName } from "@/components/ui/styles";
 import { TextareaField } from "@/components/ui/textarea-field";
 import { TextField } from "@/components/ui/text-field";
-import type { FormState } from "@/lib/forms";
 import { dateToMonth } from "@/lib/profile/dates";
 import type { Experience } from "@/lib/profile/types";
 
-type ExperienceFormProps = {
-  saveAction: (state: FormState, formData: FormData) => Promise<FormState>;
-  experience?: Experience; // to edit; leave it out to create a new one
-  submitLabel: string;
-  onClose: () => void; // called after a successful save, and on Cancel
-};
-
-/** Create or edit an experience. Used by the client components of the list. */
-export function ExperienceForm({
-  saveAction,
-  experience,
-  submitLabel,
-  onClose,
-}: ExperienceFormProps) {
-  async function saveThenClose(state: FormState, formData: FormData) {
-    const nextState = await saveAction(state, formData);
-    if (nextState?.status === "success") {
-      onClose();
-    }
-    return nextState;
-  }
-
-  return (
-    <ActionForm
-      action={saveThenClose}
-      submitLabel={submitLabel}
-      secondaryButton={
-        <button
-          type="button"
-          onClick={onClose}
-          className={secondaryButtonClassName}
-        >
-          Cancel
-        </button>
-      }
-    >
-      <ExperienceFields experience={experience} />
-    </ActionForm>
-  );
-}
-
-function ExperienceFields({ experience }: { experience?: Experience }) {
+/** The fields of an experience form, empty or filled with `experience`. */
+export function ExperienceFields({ experience }: { experience?: Experience }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2">

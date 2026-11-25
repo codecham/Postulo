@@ -3,10 +3,15 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { EducationSection } from "@/components/profile/education-section";
 import { ExperienceSection } from "@/components/profile/experience-section";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { secondaryButtonClassName } from "@/components/ui/styles";
-import { getMyProfile, listMyExperiences } from "@/lib/profile/queries";
+import {
+  getMyProfile,
+  listMyEducations,
+  listMyExperiences,
+} from "@/lib/profile/queries";
 
 export const metadata: Metadata = { title: "Profile" };
 
@@ -31,16 +36,18 @@ export default function ProfilePage() {
 }
 
 async function ProfileContent() {
-  // Both requests run at the same time; a missing session redirects to /login
-  const [profile, experiences] = await Promise.all([
+  // The requests run at the same time; a missing session redirects to /login
+  const [profile, experiences, educations] = await Promise.all([
     getMyProfile(),
     listMyExperiences(),
+    listMyEducations(),
   ]);
 
   return (
     <>
       <ProfileForm profile={profile} />
       <ExperienceSection experiences={experiences} />
+      <EducationSection educations={educations} />
     </>
   );
 }

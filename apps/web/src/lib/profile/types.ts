@@ -10,3 +10,6 @@ export type WorkMode = Schemas["WorkMode"];
 
 export type Experience = Schemas["ExperienceRead"];
 export type ExperienceInput = Schemas["ExperienceCreate"];
+
+export type Education = Schemas["EducationRead"];
+export type EducationInput = Schemas["EducationCreate"];

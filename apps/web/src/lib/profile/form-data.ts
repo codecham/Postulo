@@ -1,6 +1,7 @@
 import { readChecked, readList, readOptionalText, readText } from "@/lib/forms";
 import { monthToDate } from "@/lib/profile/dates";
 import type {
+  EducationInput,
   ExperienceInput,
   ProfileUpdate,
   WorkMode,
@@ -29,6 +30,18 @@ export function toExperienceInput(formData: FormData): ExperienceInput {
     company: readText(formData, "company"),
     location: readOptionalText(formData, "location"),
     start_date: monthToDate(readText(formData, "start_month")) ?? "",
+    end_date: monthToDate(readText(formData, "end_month")),
+    description: readOptionalText(formData, "description"),
+  };
+}
+
+export function toEducationInput(formData: FormData): EducationInput {
+  return {
+    school: readText(formData, "school"),
+    degree: readOptionalText(formData, "degree"),
+    field_of_study: readOptionalText(formData, "field_of_study"),
+    location: readOptionalText(formData, "location"),
+    start_date: monthToDate(readText(formData, "start_month")),
     end_date: monthToDate(readText(formData, "end_month")),
     description: readOptionalText(formData, "description"),
   };

@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models import CvImportStatus
+from app.schemas.education import EducationCreate
 from app.schemas.experience import ExperienceCreate
 from app.schemas.fields import TAG_LIST_MAX_LENGTH
 from app.schemas.profile import ProfileUpdate
@@ -16,11 +17,20 @@ class DraftExperience(ExperienceCreate):
     already_exists: bool = False
 
 
+class DraftEducation(EducationCreate):
+    """An education found in the CV."""
+
+    # True when the user already has it (same school and degree)
+    already_exists: bool = False
+
+
 class CvImportDraft(BaseModel):
     """What the import proposes: the current profile completed with the CV."""
 
     profile: ProfileUpdate
     experiences: list[DraftExperience]
+    # Default: drafts saved before education existed have no such key
+    educations: list[DraftEducation] = []
     # Parts of the CV that could not be used, so the user can add them by hand
     warnings: list[str]
 
@@ -42,6 +52,7 @@ class CvImportApply(BaseModel):
 
     profile: ProfileUpdate
     experiences: list[ExperienceCreate] = Field(default=[], max_length=TAG_LIST_MAX_LENGTH)
+    educations: list[EducationCreate] = Field(default=[], max_length=TAG_LIST_MAX_LENGTH)
 
 
 class CvImportOptions(BaseModel):

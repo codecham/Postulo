@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from app.services.cv_import.normalize import normalize_extraction, parse_month
-from tests.fakes import make_extracted_experience, make_extraction
+from tests.fakes import make_extracted_education, make_extracted_experience, make_extraction
 
 
 @pytest.mark.parametrize(
@@ -73,3 +73,22 @@ def test_an_experience_without_company_is_skipped() -> None:
 
     assert result.experiences == []
     assert "the title or the company is missing" in result.warnings[0]
+
+
+def test_an_education_keeps_its_partial_dates() -> None:
+    item = make_extracted_education(start_month=None, end_month="2018")
+
+    education = normalize_extraction(make_extraction(education=[item])).educations[0]
+
+    assert education.school == "42 Paris"
+    assert education.start_date is None
+    assert education.end_date is None  # "2018" is not a YYYY-MM month
+
+
+def test_an_education_without_school_is_skipped() -> None:
+    extraction = make_extraction(education=[make_extracted_education(school=" ")])
+
+    result = normalize_extraction(extraction)
+
+    assert result.educations == []
+    assert result.warnings == ["An education without a school name was skipped."]

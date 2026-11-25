@@ -24,13 +24,20 @@ def start(client: TestClient, headers: dict[str, str]) -> dict[str, Any]:
     return body
 
 
+def without_flag(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Draft items as the apply body expects them: without `already_exists`."""
+    return [
+        {key: value for key, value in item.items() if key != "already_exists"} for item in items
+    ]
+
+
 def apply(client: TestClient, headers: dict[str, str], cv_import: dict[str, Any]) -> Any:
     draft = cv_import["draft"]
-    experiences = [
-        {key: value for key, value in item.items() if key != "already_exists"}
-        for item in draft["experiences"]
-    ]
-    body = {"profile": draft["profile"], "experiences": experiences}
+    body = {
+        "profile": draft["profile"],
+        "experiences": without_flag(draft["experiences"]),
+        "educations": without_flag(draft["educations"]),
+    }
     return client.post(f"/profile/imports/{cv_import['id']}/apply", json=body, headers=headers)
 
 
@@ -51,6 +58,7 @@ def test_upload_returns_a_draft_merged_with_the_current_profile(
     assert profile["city"] == "Brussels"
     assert profile["skills"] == ["Docker", "Python", "PostgreSQL"]
     assert body["draft"]["experiences"][0]["already_exists"] is False
+    assert body["draft"]["educations"][0]["school"] == "42 Paris"
 
 
 def test_upload_does_not_change_the_profile(
@@ -187,6 +195,9 @@ def test_apply_saves_the_profile_and_the_experiences(
     assert client.get("/profile/me", headers=headers).json()["full_name"] == "Alice Martin"
     assert [item["company"] for item in client.get("/experiences", headers=headers).json()] == [
         "Acme"
+    ]
+    assert [item["school"] for item in client.get("/educations", headers=headers).json()] == [
+        "42 Paris"
     ]
 
 
