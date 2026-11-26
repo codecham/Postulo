@@ -16,12 +16,17 @@ export function TextareaField({
   label,
   hint,
   rows = 4,
+  className = "",
   ...textareaProps
 }: TextareaFieldProps) {
   return (
     <label className={labelClassName}>
       {label}
-      <textarea className={inputClassName} rows={rows} {...textareaProps} />
+      <textarea
+        className={`${inputClassName} ${className}`}
+        rows={rows}
+        {...textareaProps}
+      />
       {hint && <span className={hintClassName}>{hint}</span>}
     </label>
   );

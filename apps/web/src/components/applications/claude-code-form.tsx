@@ -16,7 +16,7 @@ export function ClaudeCodeForm({ matchId }: { matchId: string }) {
         <li>
           <span className="flex flex-wrap items-center gap-2">
             Run in Claude Code, in this project:
-            <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">
+            <code className="bg-subtle rounded-md px-1.5 py-0.5 font-mono text-xs break-all">
               {command}
             </code>
             <CopyButton text={command} label="Copy" />

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { CheckIcon } from "@/components/ui/icons";
 import { secondaryButtonClassName } from "@/components/ui/styles";
 
 type CopyButtonProps = {
@@ -21,7 +22,14 @@ export function CopyButton({ text, label }: CopyButtonProps) {
 
   return (
     <button type="button" onClick={copy} className={secondaryButtonClassName}>
-      {copied ? "Copied ✓" : label}
+      {copied ? (
+        <>
+          <CheckIcon className="text-success size-4" />
+          <span aria-live="polite">Copied</span>
+        </>
+      ) : (
+        label
+      )}
     </button>
   );
 }

@@ -29,7 +29,7 @@ export function AddItem({ label, form }: AddItemProps) {
         onClick={() => setIsOpen(true)}
         className={secondaryButtonClassName}
       >
-        + {label}
+        <span aria-hidden>+</span> {label}
       </button>
     </div>
   );

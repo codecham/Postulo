@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 
-import { secondaryButtonClassName } from "@/components/ui/styles";
+import { buttonClassName } from "@/components/ui/styles";
 
 type DeleteButtonProps = {
   action: () => Promise<void>; // a server action, with its id already bound
@@ -24,7 +24,7 @@ export function DeleteButton({
 
   return (
     <form action={action} onSubmit={confirmDelete}>
-      <button type="submit" className={secondaryButtonClassName}>
+      <button type="submit" className={buttonClassName("danger")}>
         {label}
       </button>
     </form>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { PageLoading } from "@/components/layout/page-loading";
 import { EducationSection } from "@/components/profile/education-section";
 import { ExperienceSection } from "@/components/profile/experience-section";
 import { ProfileForm } from "@/components/profile/profile-form";
@@ -17,7 +18,7 @@ export const metadata: Metadata = { title: "Profile" };
 
 export default function ProfilePage() {
   return (
-    <section className="flex flex-col gap-8">
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
         title="Your profile"
         description="Postulo uses it to find job offers and to write your applications."
@@ -28,7 +29,7 @@ export default function ProfilePage() {
         }
       />
       {/* Per-user data, read at request time: it streams in behind Suspense */}
-      <Suspense fallback={<p className="text-gray-500">Loading…</p>}>
+      <Suspense fallback={<PageLoading />}>
         <ProfileContent />
       </Suspense>
     </section>

@@ -11,11 +11,16 @@ export function StartSearchButton({ disabled }: { disabled: boolean }) {
   const [state, formAction] = useActionState(startJobSearch, undefined);
 
   return (
-    <form action={formAction} className="flex flex-wrap items-center gap-4">
+    <form
+      action={formAction}
+      className="flex flex-row-reverse flex-wrap items-center gap-3"
+    >
       {/* While a search runs, the button stays disabled until the page refreshes */}
       <SubmitButton
         pending={disabled || undefined}
         pendingLabel={disabled ? "Searching…" : "Starting…"}
+        variant="secondary"
+        size="sm"
       >
         Search now
       </SubmitButton>

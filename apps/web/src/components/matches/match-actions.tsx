@@ -20,13 +20,13 @@ const ACTIONS: Record<MatchStatus, Action[]> = {
 /** Save, dismiss or restore a match: one click, no confirmation (it can be undone). */
 export function MatchActions({ match }: { match: JobMatch }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1">
       {ACTIONS[match.status].map((action) => (
         <form
           key={action.status}
           action={setMatchStatus.bind(null, match.id, action.status)}
         >
-          <StatusButton>{action.label}</StatusButton>
+          <StatusButton variant="ghost">{action.label}</StatusButton>
         </form>
       ))}
     </div>

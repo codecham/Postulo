@@ -2,6 +2,14 @@
 
 AI-assisted job search app: job offer collection, scoring, CV and cover letter generation, application tracking
 
+![Job matches](docs/screenshots/jobs.png)
+
+| Apply in three steps | Follow every application |
+| --- | --- |
+| ![Apply panel](docs/screenshots/apply-panel.png) | ![Applications board](docs/screenshots/applications.png) |
+| **Dark mode** | **Mobile** |
+| ![Job matches in dark mode](docs/screenshots/jobs-dark.png) | <img src="docs/screenshots/jobs-mobile.png" alt="Job matches on mobile" width="260"> |
+
 ## Stack
 
 | Part | Technology |

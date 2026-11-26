@@ -1,3 +1,4 @@
+import { CheckIcon } from "@/components/ui/icons";
 import { placeLabel, relevanceLabel } from "@/lib/job-search/labels";
 import type { JobMatch } from "@/lib/job-search/types";
 
@@ -12,12 +13,10 @@ export function MatchReasons({ match }: { match: JobMatch }) {
   ].filter((reason): reason is string => Boolean(reason));
 
   return (
-    <ul className="flex flex-col gap-0.5 text-sm text-gray-600 dark:text-gray-400">
+    <ul className="text-muted flex flex-col gap-1 text-sm">
       {reasons.map((reason) => (
-        <li key={reason} className="flex gap-2">
-          <span aria-hidden className="text-green-600">
-            ✓
-          </span>
+        <li key={reason} className="flex items-start gap-2">
+          <CheckIcon className="text-success mt-0.5 size-4 shrink-0" />
           {reason}
         </li>
       ))}

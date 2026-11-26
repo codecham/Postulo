@@ -3,10 +3,20 @@
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
+import { Spinner } from "@/components/ui/spinner";
+import {
+  type ButtonSize,
+  buttonClassName,
+  type ButtonVariant,
+} from "@/components/ui/styles";
+
 type SubmitButtonProps = {
   children: ReactNode;
   pendingLabel?: string;
   pending?: boolean; // only needed when the form is not submitted through its `action`
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
 };
 
 /** The submit button of the surrounding form, disabled while it is sent. */
@@ -14,6 +24,9 @@ export function SubmitButton({
   children,
   pendingLabel = "Saving…",
   pending,
+  variant = "primary",
+  size = "md",
+  fullWidth = false,
 }: SubmitButtonProps) {
   const status = useFormStatus();
   const isPending = pending ?? status.pending;
@@ -21,9 +34,17 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={isPending}
-      className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50 dark:bg-white dark:text-gray-900"
+      aria-busy={isPending}
+      className={`${buttonClassName(variant, size)} ${fullWidth ? "w-full" : ""}`}
     >
-      {isPending ? pendingLabel : children}
+      {isPending ? (
+        <>
+          <Spinner />
+          {pendingLabel}
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }

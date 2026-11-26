@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/icons";
 import { secondaryButtonClassName } from "@/components/ui/styles";
 import {
   type MatchFilters,
@@ -27,12 +28,13 @@ export function Pager({ filters, total }: PagerProps) {
           href={pageHref(filters.page - 1)}
           className={secondaryButtonClassName}
         >
-          ← Previous
+          <ArrowLeftIcon />
+          Previous
         </Link>
       ) : (
         <span />
       )}
-      <span className="text-gray-500">
+      <span className="text-muted">
         Page {filters.page} of {pages}
       </span>
       {filters.page < pages ? (
@@ -40,7 +42,8 @@ export function Pager({ filters, total }: PagerProps) {
           href={pageHref(filters.page + 1)}
           className={secondaryButtonClassName}
         >
-          Next →
+          Next
+          <ArrowRightIcon />
         </Link>
       ) : (
         <span />

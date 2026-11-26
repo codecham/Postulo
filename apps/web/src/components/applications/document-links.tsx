@@ -1,13 +1,12 @@
 import { CopyButton } from "@/components/ui/copy-button";
+import { DownloadIcon } from "@/components/ui/icons";
+import { buttonClassName } from "@/components/ui/styles";
 import { letterText } from "@/lib/applications/letter-text";
 import {
   type Application,
   DOCUMENTS,
   type DocumentName,
 } from "@/lib/applications/types";
-
-const primaryLinkClassName =
-  "rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 dark:bg-white dark:text-gray-900";
 
 /** Download the PDFs, and copy the letter for forms that want plain text. */
 export function DocumentLinks({ application }: { application: Application }) {
@@ -19,9 +18,11 @@ export function DocumentLinks({ application }: { application: Application }) {
           key={name}
           href={`/jobs/${application.match_id}/application/${name}`}
           download
-          className={primaryLinkClassName}
+          className={buttonClassName("secondary")}
         >
-          ↓ {DOCUMENTS[name]} (PDF)
+          <DownloadIcon />
+          {DOCUMENTS[name]}
+          <span className="text-muted text-xs">PDF</span>
         </a>
       ))}
       <CopyButton

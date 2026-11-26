@@ -28,11 +28,9 @@ export function DraftItemsFields({
       description="Checked items are added to your profile. You can edit them there afterwards."
     >
       {items.length === 0 ? (
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {emptyMessage}
-        </p>
+        <p className="text-muted text-sm">{emptyMessage}</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-gray-200 dark:divide-gray-800">
+        <ul className="divide-line flex flex-col divide-y">
           {items.map((item, index) => (
             <li key={item.key} className="py-4 first:pt-0 last:pb-0">
               <DraftItemOption
@@ -76,7 +74,7 @@ function DraftItemOption({
       <div className="flex flex-col gap-1">
         {children}
         {alreadyExists && (
-          <p className="text-xs text-gray-500">Already in your profile</p>
+          <p className="text-muted text-xs">Already in your profile</p>
         )}
       </div>
     </label>
