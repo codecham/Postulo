@@ -19,7 +19,8 @@ ALLOWED_TOOLS=(
   "Bash(uv run python -m scripts.application_instructions:*)"
   "Bash(uv run python -m scripts.check_application:*)"
   "Read"
-  "Write(~/.cache/postulo/**)"
+  "Edit(~/.cache/postulo/**)"
+  "WebFetch"
   "mcp__claude-in-chrome__*"
 )
 
