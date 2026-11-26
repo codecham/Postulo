@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-import { inputClassName } from "@/components/ui/styles";
+import { buttonClassName, inputClassName } from "@/components/ui/styles";
 import type { Option } from "@/lib/forms";
 import type { FilterOptions } from "@/lib/job-search/filter-options";
 import {
@@ -46,7 +46,8 @@ export function MatchFilterBar({
 
   return (
     <div
-      className={`flex flex-wrap items-end gap-3 transition-opacity ${isPending ? "opacity-60" : ""}`}
+      aria-busy={isPending}
+      className={`grid grid-cols-2 items-end gap-3 transition-opacity sm:grid-cols-4 lg:grid-cols-7 ${isPending ? "opacity-60" : ""}`}
     >
       {(Object.keys(FILTER_LABELS) as (keyof typeof FILTER_LABELS)[]).map(
         (name) => (
@@ -72,7 +73,7 @@ export function MatchFilterBar({
             sort: filters.sort,
             page: 1,
           })}
-          className="pb-2 text-sm underline"
+          className={`${buttonClassName("ghost")} justify-self-start`}
         >
           Clear filters
         </Link>
@@ -90,12 +91,12 @@ type FilterSelectProps = {
 
 function FilterSelect({ label, value, options, onChange }: FilterSelectProps) {
   return (
-    <label className="flex flex-col gap-1 text-xs font-medium text-gray-500">
+    <label className="text-muted flex min-w-0 flex-col gap-1 text-xs font-medium">
       {label}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={`${inputClassName} py-1.5 text-sm text-gray-900 dark:text-gray-100`}
+        className={`${inputClassName} text-fg py-1.5 text-sm`}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

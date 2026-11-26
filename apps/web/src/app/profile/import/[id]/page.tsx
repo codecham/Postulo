@@ -6,6 +6,7 @@ import { DiscardImportButton } from "@/components/cv-import/discard-import-butto
 import { ImportReviewForm } from "@/components/cv-import/import-review-form";
 import { ImportWarnings } from "@/components/cv-import/import-warnings";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageLoading } from "@/components/layout/page-loading";
 import { getCvImport } from "@/lib/cv-import/queries";
 
 export const metadata: Metadata = { title: "Review your CV import" };
@@ -14,9 +15,9 @@ type ReviewPageProps = { params: Promise<{ id: string }> };
 
 export default function ReviewCvImportPage({ params }: ReviewPageProps) {
   return (
-    <section className="flex flex-col gap-8">
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       {/* Per-user data, read at request time: it streams in behind Suspense */}
-      <Suspense fallback={<p className="text-gray-500">Loading…</p>}>
+      <Suspense fallback={<PageLoading />}>
         <ReviewContent params={params} />
       </Suspense>
     </section>

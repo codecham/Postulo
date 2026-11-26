@@ -4,7 +4,6 @@ import type { JobOffer } from "@/lib/job-search/types";
 /** Company, place, work mode, salary and age of an offer, on one line. */
 export function OfferFacts({ offer }: { offer: JobOffer }) {
   const facts = [
-    offer.company,
     offer.location,
     offer.work_mode && WORK_MODE_LABELS[offer.work_mode],
     offer.salary,
@@ -12,5 +11,21 @@ export function OfferFacts({ offer }: { offer: JobOffer }) {
     `via ${offer.source}`,
   ].filter(Boolean);
 
-  return <p className="text-sm">{facts.join(" · ")}</p>;
+  return (
+    <p className="text-muted flex flex-wrap gap-x-2 text-sm">
+      {offer.company && (
+        <span className="text-fg font-medium">{offer.company}</span>
+      )}
+      {facts.map((fact, index) => (
+        <span key={String(fact)} className="flex gap-2">
+          {(index > 0 || offer.company) && (
+            <span aria-hidden className="text-line-strong">
+              ·
+            </span>
+          )}
+          {fact}
+        </span>
+      ))}
+    </p>
+  );
 }

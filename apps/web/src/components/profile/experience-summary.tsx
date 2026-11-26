@@ -15,11 +15,11 @@ export function ExperienceSummary({
     <div className="flex flex-col gap-1">
       <h3 className="font-semibold">{experience.title}</h3>
       <p className="text-sm">{place}</p>
-      <p className="text-sm text-gray-500">
+      <p className="text-muted text-sm">
         {formatPeriod(experience.start_date, experience.end_date ?? null)}
       </p>
       {experience.description && (
-        <p className="mt-2 text-sm whitespace-pre-line text-gray-700 dark:text-gray-300">
+        <p className="text-fg mt-2 text-sm whitespace-pre-line">
           {experience.description}
         </p>
       )}

@@ -43,7 +43,7 @@ Conventions:
 - All API calls happen on the server, through the typed client in `src/lib/api/client.ts` (`import "server-only"`). The access token lives in an httpOnly cookie handled by `src/lib/auth/session.ts`; never expose it to client components.
 - Mutations use server actions (`"use server"`), forms use `useActionState`.
 - `src/lib/api/schema.d.ts` is generated: never edit it by hand, run `make api-types`.
-- Styling: Tailwind CSS utility classes.
+- Styling: Tailwind CSS utility classes with the semantic design tokens of `src/app/globals.css` (`bg-surface`, `text-muted`, `border-line`, `bg-accent`, `text-success`...), never raw palette colors such as `gray-500`: light and dark mode come from the tokens. Reuse `src/components/ui/` (`buttonClassName`, `Card`, `Badge`, `EmptyState`, `Alert`, icons) before writing new markup.
 
 ## Rules
 

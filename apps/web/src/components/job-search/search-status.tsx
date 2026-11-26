@@ -1,45 +1,57 @@
 import { AutoRefresh } from "@/components/job-search/auto-refresh";
 import { StartSearchButton } from "@/components/job-search/start-search-button";
-import { Card } from "@/components/ui/card";
+import { cardClassName } from "@/components/ui/card";
+import { SearchIcon } from "@/components/ui/icons";
 import { formatDateTime, isActive, statusLabel } from "@/lib/job-search/runs";
 import type { JobSearchRun } from "@/lib/job-search/types";
 
-/** The last search, and a button to start a new one. */
+/** The last search, in one line, and a button to start a new one. */
 export function SearchStatus({ run }: { run: JobSearchRun | null }) {
   const active = isActive(run);
 
   return (
-    <Card
-      title="Search"
-      description="Postulo searches every day on its own. You can also search now."
+    <section
+      aria-label="Search"
+      className={`${cardClassName} flex flex-wrap items-center justify-between gap-4 p-4`}
     >
-      {run ? (
-        <RunSummary run={run} />
-      ) : (
-        <p className="text-sm">No search yet.</p>
-      )}
+      <div className="flex items-start gap-3">
+        <span className="bg-accent-soft text-accent-text flex size-9 shrink-0 items-center justify-center rounded-lg">
+          <SearchIcon className={`size-4 ${active ? "animate-pulse" : ""}`} />
+        </span>
+        {run ? (
+          <RunSummary run={run} />
+        ) : (
+          <div className="text-sm">
+            <p className="font-medium">No search yet</p>
+            <p className="text-muted">
+              Postulo searches every day on its own. Start the first one now.
+            </p>
+          </div>
+        )}
+      </div>
       <StartSearchButton disabled={active} />
       {active && <AutoRefresh />}
-    </Card>
+    </section>
   );
 }
 
 function RunSummary({ run }: { run: JobSearchRun }) {
   return (
-    <div className="flex flex-col gap-1 text-sm">
-      <p>
-        <span className="font-medium">Last search:</span>{" "}
-        {formatDateTime(run.created_at)} · {statusLabel(run)}
+    <div className="flex flex-col gap-0.5 text-sm">
+      <p className="font-medium">
+        Last search {formatDateTime(run.created_at)}
+        <span className="text-muted font-normal"> · {statusLabel(run)}</span>
       </p>
       {run.status === "succeeded" && (
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted">
           {run.offers_found} offers checked ({run.offers_new} new),{" "}
-          {run.matches_found} match your profile.
+          {run.matches_found} match your profile. Next one runs on its own
+          tomorrow.
         </p>
       )}
-      {run.error && <p className="text-red-600">{run.error}</p>}
+      {run.error && <p className="text-danger">{run.error}</p>}
       {run.failed_sources.length > 0 && (
-        <p className="text-amber-700 dark:text-amber-500">
+        <p className="text-warning">
           Could not reach: {run.failed_sources.join(", ")}.
         </p>
       )}

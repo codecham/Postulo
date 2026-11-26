@@ -1,21 +1,31 @@
-/** The match score, from 0 to 100, colored by how good it is. */
+import type { CSSProperties } from "react";
+
+/** The match score, from 0 to 100, as a ring that fills and colors with it. */
 export function ScoreBadge({ score }: { score: number }) {
+  const style = {
+    background: `conic-gradient(${scoreColor(score)} ${score}%, var(--line) 0)`,
+  } satisfies CSSProperties;
+
   return (
     <span
       title="How well the offer fits your profile, from 0 to 100"
-      className={`shrink-0 rounded-full px-2.5 py-1 text-sm font-semibold tabular-nums ${scoreColor(score)}`}
+      className="flex size-12 shrink-0 items-center justify-center rounded-full p-1"
+      style={style}
     >
-      {score}
+      <span className="bg-surface flex size-full flex-col items-center justify-center rounded-full leading-none">
+        <span className="text-sm font-semibold tabular-nums">{score}</span>
+        <span className="sr-only"> / 100 match</span>
+      </span>
     </span>
   );
 }
 
 function scoreColor(score: number): string {
   if (score >= 75) {
-    return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300";
+    return "var(--success-text)";
   }
   if (score >= 50) {
-    return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300";
+    return "var(--accent)";
   }
-  return "bg-gray-100 dark:bg-gray-800";
+  return "var(--muted)";
 }

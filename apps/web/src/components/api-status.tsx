@@ -11,11 +11,12 @@ export async function ApiStatus() {
   );
 
   return (
-    <p className="flex items-center gap-2 text-sm">
+    <p className="text-muted flex items-center gap-2 text-xs">
       <span
-        className={`h-2.5 w-2.5 rounded-full ${healthy ? "bg-green-500" : "bg-red-500"}`}
+        aria-hidden
+        className={`size-2 rounded-full ${healthy ? "bg-success" : "bg-danger"}`}
       />
-      {healthy ? "API and database are up" : "API or database unreachable"}
+      {healthy ? "All systems operational" : "API or database unreachable"}
     </p>
   );
 }

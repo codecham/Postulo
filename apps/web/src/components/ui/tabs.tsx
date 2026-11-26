@@ -23,7 +23,7 @@ export function Tabs({ label, tabs, defaultId }: TabsProps) {
       <div
         role="tablist"
         aria-label={label}
-        className="flex gap-1 border-b border-gray-200 dark:border-gray-800"
+        className="bg-subtle flex w-fit max-w-full gap-1 overflow-x-auto rounded-lg p-1"
       >
         {tabs.map((tab) => {
           const isActive = tab.id === activeId;
@@ -36,10 +36,10 @@ export function Tabs({ label, tabs, defaultId }: TabsProps) {
               aria-selected={isActive}
               aria-controls={`panel-${tab.id}`}
               onClick={() => setActiveId(tab.id)}
-              className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+              className={`rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
-                  ? "border-gray-900 dark:border-white"
-                  : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                  ? "bg-surface text-fg shadow-sm"
+                  : "text-muted hover:text-fg"
               }`}
             >
               {tab.label}

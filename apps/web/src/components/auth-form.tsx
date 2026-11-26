@@ -33,16 +33,23 @@ export function AuthForm({
         name="password"
         type="password"
         autoComplete={passwordAutoComplete}
+        hint={
+          passwordAutoComplete === "new-password"
+            ? "At least 8 characters."
+            : undefined
+        }
         minLength={8}
         maxLength={128}
         required
       />
       {state?.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-danger text-sm font-medium">
           {state.error}
         </p>
       )}
-      <SubmitButton pendingLabel="Please wait…">{submitLabel}</SubmitButton>
+      <SubmitButton pendingLabel="Please wait…" fullWidth>
+        {submitLabel}
+      </SubmitButton>
     </form>
   );
 }

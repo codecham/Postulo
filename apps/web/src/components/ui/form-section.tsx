@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { cardClassName } from "@/components/ui/card";
+
 type FormSectionProps = {
   title: string;
   description?: string;
@@ -13,13 +15,12 @@ export function FormSection({
   children,
 }: FormSectionProps) {
   return (
-    <fieldset className="flex flex-col gap-4 rounded-lg border border-gray-200 p-5 dark:border-gray-800">
-      <legend className="px-1 font-semibold">{title}</legend>
-      {description && (
-        <p className="-mt-2 text-sm text-gray-600 dark:text-gray-400">
-          {description}
-        </p>
-      )}
+    <fieldset
+      className={`${cardClassName} flex min-w-0 flex-col gap-4 p-5 sm:p-6`}
+    >
+      {/* A float legend sits inside the card like a heading, instead of on its border */}
+      <legend className="float-left mb-1 w-full font-semibold">{title}</legend>
+      {description && <p className="text-muted -mt-3 text-sm">{description}</p>}
       {children}
     </fieldset>
   );

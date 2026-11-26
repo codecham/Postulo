@@ -40,7 +40,7 @@ export function FileField({
       {label}
       <input
         type="file"
-        className={inputClassName}
+        className={`${inputClassName} file:bg-accent-soft file:text-accent-text file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1 file:text-sm file:font-medium`}
         onChange={handleChange}
         {...inputProps}
       />

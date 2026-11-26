@@ -2,10 +2,11 @@ import Link from "next/link";
 
 import { DocumentLinks } from "@/components/applications/document-links";
 import { WriteApplication } from "@/components/applications/write-application";
-import { MarkAsSentButton } from "@/components/tracking/mark-as-sent-button";
-import { StatusBadge } from "@/components/tracking/status-badge";
+import { ApplyStep, type StepState } from "@/components/matches/apply-step";
+import { SendActions } from "@/components/tracking/send-actions";
 import { Card } from "@/components/ui/card";
-import { secondaryButtonClassName } from "@/components/ui/styles";
+import { PencilIcon } from "@/components/ui/icons";
+import { buttonClassName } from "@/components/ui/styles";
 import type { Application } from "@/lib/applications/types";
 import type { JobOffer } from "@/lib/job-search/types";
 import type { Tracking } from "@/lib/tracking/types";
@@ -18,7 +19,10 @@ type ApplyPanelProps = {
   canUseAi: boolean;
 };
 
-/** From a match to a sent application: write, download, apply, mark as sent. */
+/**
+ * From a match to a sent application, in three steps that light up in turn:
+ * write the documents, download them, send and mark as sent.
+ */
 export function ApplyPanel({
   matchId,
   offer,
@@ -26,51 +30,67 @@ export function ApplyPanel({
   tracking,
   canUseAi,
 }: ApplyPanelProps) {
+  const written = application !== null;
+  const sent = tracking !== null;
+  const steps: Record<"write" | "download" | "send", StepState> = {
+    write: written || sent ? "done" : "current",
+    download: !written ? "upcoming" : sent ? "done" : "current",
+    send: sent ? "done" : written ? "current" : "upcoming",
+  };
+
   return (
     <Card
-      title="Apply"
+      id="apply"
+      title={sent ? "Application sent" : "Apply"}
       description="A CV and a cover letter tailored to this offer, in its language."
     >
-      {application ? (
-        <>
-          <DocumentLinks application={application} />
-          <details className="text-sm">
-            <summary className="cursor-pointer text-gray-600 dark:text-gray-400">
-              Write a new version
-            </summary>
-            <div className="mt-4">
-              <WriteApplication matchId={matchId} canUseAi={canUseAi} />
-            </div>
-          </details>
-        </>
-      ) : (
-        <WriteApplication matchId={matchId} canUseAi={canUseAi} />
-      )}
-      <div className="flex flex-wrap gap-2">
-        {application && (
-          <Link
-            href={`/jobs/${matchId}/application`}
-            className={secondaryButtonClassName}
-          >
-            Review and edit
-          </Link>
-        )}
-        <a
-          href={offer.url}
-          target="_blank"
-          rel="noopener"
-          className={secondaryButtonClassName}
+      <ol>
+        <ApplyStep
+          number={1}
+          title="Write your CV and letter"
+          state={steps.write}
         >
-          Apply on {offer.source} ↗
-        </a>
-        {tracking ? (
-          <span className="flex items-center gap-2 text-sm">
-            Sent <StatusBadge status={tracking.status} />
-          </span>
-        ) : (
-          <MarkAsSentButton matchId={matchId} />
-        )}
-      </div>
+          {written ? (
+            <details className="group text-sm">
+              <summary className="text-muted hover:text-fg cursor-pointer">
+                Write a new version
+              </summary>
+              <div className="mt-4">
+                <WriteApplication matchId={matchId} canUseAi={canUseAi} />
+              </div>
+            </details>
+          ) : (
+            !sent && <WriteApplication matchId={matchId} canUseAi={canUseAi} />
+          )}
+        </ApplyStep>
+        <ApplyStep number={2} title="Check and download" state={steps.download}>
+          {application && (
+            <>
+              <DocumentLinks application={application} />
+              <Link
+                href={`/jobs/${matchId}/application`}
+                className={`${buttonClassName("ghost")} self-start`}
+              >
+                <PencilIcon />
+                Review and edit
+              </Link>
+            </>
+          )}
+        </ApplyStep>
+        <ApplyStep
+          number={3}
+          title={`Send it on ${offer.source}`}
+          state={steps.send}
+          isLast
+        >
+          <SendActions
+            matchId={matchId}
+            offer={offer}
+            tracking={tracking}
+            primary={written}
+          />
+        </ApplyStep>
+      </ol>
     </Card>
   );
 }

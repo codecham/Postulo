@@ -24,7 +24,7 @@ export function StatusTabs({ filters, counts }: StatusTabsProps) {
   return (
     <nav
       aria-label="Match status"
-      className="flex gap-1 border-b border-gray-200 dark:border-gray-800"
+      className="bg-subtle flex w-fit max-w-full gap-1 overflow-x-auto rounded-lg p-1"
     >
       {MATCH_STATUSES.map((status) => {
         const isActive = status === filters.status;
@@ -33,14 +33,20 @@ export function StatusTabs({ filters, counts }: StatusTabsProps) {
             key={status}
             href={matchesHref(withFilters(filters, { status }))}
             aria-current={isActive ? "page" : undefined}
-            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
               isActive
-                ? "border-gray-900 dark:border-white"
-                : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                ? "bg-surface text-fg shadow-sm"
+                : "text-muted hover:text-fg"
             }`}
           >
-            {LABELS[status]}{" "}
-            <span className="text-gray-500 tabular-nums">{counts[status]}</span>
+            {LABELS[status]}
+            <span
+              className={`rounded-full px-1.5 text-xs tabular-nums ${
+                isActive ? "bg-accent-soft text-accent-text" : "bg-line"
+              }`}
+            >
+              {counts[status]}
+            </span>
           </Link>
         );
       })}

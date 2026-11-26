@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+
 export type ListItem = { key: string; content: ReactNode };
 
 type ListSectionProps = {
@@ -17,14 +20,11 @@ export function ListSection({
   footer,
 }: ListSectionProps) {
   return (
-    <section className="flex flex-col gap-4 rounded-lg border border-gray-200 p-5 dark:border-gray-800">
-      <h2 className="font-semibold">{title}</h2>
+    <Card title={title}>
       {items.length === 0 ? (
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {emptyMessage}
-        </p>
+        <EmptyState compact description={emptyMessage} />
       ) : (
-        <ul className="flex flex-col divide-y divide-gray-200 dark:divide-gray-800">
+        <ul className="divide-line flex flex-col divide-y">
           {items.map((item) => (
             <li key={item.key} className="py-4 first:pt-0 last:pb-0">
               {item.content}
@@ -33,6 +33,6 @@ export function ListSection({
         </ul>
       )}
       {footer}
-    </section>
+    </Card>
   );
 }

@@ -20,7 +20,7 @@ export function ClaudeCodeImportForm() {
         <ol className="flex list-decimal flex-col gap-1 pl-5 text-sm">
           <li>
             In Claude Code, in this project, run{" "}
-            <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">
+            <code className="bg-subtle rounded-md px-1.5 py-0.5 font-mono text-xs break-all">
               {COMMAND}
             </code>{" "}
             with the path of your PDF.

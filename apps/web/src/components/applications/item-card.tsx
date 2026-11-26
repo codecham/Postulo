@@ -11,7 +11,7 @@ type ItemCardProps = {
 /** One experience or education of the CV, with a checkbox to leave it out. */
 export function ItemCard({ keepField, index, children }: ItemCardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-md border border-gray-200 p-4 dark:border-gray-800">
+    <div className="border-line bg-canvas/50 flex flex-col gap-4 rounded-lg border p-4">
       <CheckboxField
         label="Keep in the CV"
         name={keepField}

@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 
 import { CloseItemFormContext } from "@/components/ui/item-form";
+import { PencilIcon } from "@/components/ui/icons";
 import { secondaryButtonClassName } from "@/components/ui/styles";
 
 type EditableItemProps = {
@@ -36,6 +37,7 @@ export function EditableItem({
           onClick={() => setIsEditing(true)}
           className={secondaryButtonClassName}
         >
+          <PencilIcon />
           Edit
         </button>
         {actions}

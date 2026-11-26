@@ -11,18 +11,17 @@ import type { Tracking } from "@/lib/tracking/types";
 /** The follow-up of a sent application, on its offer's page. */
 export function TrackingCard({ tracking }: { tracking: Tracking }) {
   return (
-    <Card title="Follow-up">
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <StatusBadge status={tracking.status} />
+    <Card title="Follow-up" action={<StatusBadge status={tracking.status} />}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
         <span>Sent on {formatDay(tracking.applied_on)}</span>
         <FollowUpNote tracking={tracking} />
       </div>
       <TrackingForm tracking={tracking} />
-      <details>
-        <summary className="cursor-pointer text-sm text-gray-600 dark:text-gray-400">
+      <details className="border-line border-t pt-4">
+        <summary className="text-muted hover:text-fg cursor-pointer text-sm font-medium">
           History
         </summary>
-        <div className="mt-2 flex flex-col gap-3">
+        <div className="mt-4 flex flex-col items-start gap-4">
           <TrackingHistory events={tracking.events} />
           <DeleteButton
             action={undoMarkAsSent.bind(null, tracking.match_id)}

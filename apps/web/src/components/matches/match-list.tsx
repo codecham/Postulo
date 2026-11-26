@@ -1,30 +1,62 @@
+import Link from "next/link";
+
 import { MatchCard } from "@/components/matches/match-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { BriefcaseIcon } from "@/components/ui/icons";
+import { secondaryButtonClassName } from "@/components/ui/styles";
 import type { JobMatch, MatchStatus } from "@/lib/job-search/types";
 
-const EMPTY_MESSAGES: Record<MatchStatus, string> = {
-  new: "No offer to review. New matches arrive with each search.",
-  saved: "No saved offer yet. Save the ones you want to apply to.",
-  dismissed: "No dismissed offer.",
+const EMPTY_MESSAGES: Record<MatchStatus, { title: string; text: string }> = {
+  new: {
+    title: "You are all caught up",
+    text: "No offer to review. New matches arrive with each search.",
+  },
+  saved: {
+    title: "No saved offer yet",
+    text: "Save the offers you want to apply to: they wait for you here.",
+  },
+  dismissed: {
+    title: "Nothing dismissed",
+    text: "Offers you dismiss end up here, in case you change your mind.",
+  },
 };
 
 type MatchListProps = {
   matches: JobMatch[];
   status: MatchStatus;
   filtered: boolean; // true when filters may hide some matches
+  clearFiltersHref: string;
 };
 
-export function MatchList({ matches, status, filtered }: MatchListProps) {
+export function MatchList({
+  matches,
+  status,
+  filtered,
+  clearFiltersHref,
+}: MatchListProps) {
   if (matches.length === 0) {
+    const message = filtered
+      ? { title: "No offer fits these filters", text: "Try a wider search." }
+      : EMPTY_MESSAGES[status];
     return (
-      <p className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
-        {filtered ? "No offer fits these filters." : EMPTY_MESSAGES[status]}
-      </p>
+      <EmptyState
+        icon={<BriefcaseIcon className="size-5" />}
+        title={message.title}
+        description={message.text}
+        action={
+          filtered && (
+            <Link href={clearFiltersHref} className={secondaryButtonClassName}>
+              Clear filters
+            </Link>
+          )
+        }
+      />
     );
   }
   return (
-    <ul className="flex flex-col divide-y divide-gray-200 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+    <ul className="flex flex-col gap-3">
       {matches.map((match) => (
-        <li key={match.id} className="p-5">
+        <li key={match.id}>
           <MatchCard match={match} />
         </li>
       ))}

@@ -1,3 +1,4 @@
+import { BellIcon } from "@/components/ui/icons";
 import { formatDay } from "@/lib/tracking/dates";
 import type { Tracking } from "@/lib/tracking/types";
 
@@ -8,10 +9,16 @@ export function FollowUpNote({ tracking }: { tracking: Tracking }) {
   }
   if (tracking.follow_up_due) {
     return (
-      <span className="font-medium text-amber-700 dark:text-amber-400">
+      <span className="text-warning inline-flex items-center gap-1.5 font-medium">
+        <BellIcon />
         Follow up now (since {formatDay(tracking.follow_up_on)})
       </span>
     );
   }
-  return <span>Follow up on {formatDay(tracking.follow_up_on)}</span>;
+  return (
+    <span className="text-muted inline-flex items-center gap-1.5">
+      <BellIcon />
+      Follow up on {formatDay(tracking.follow_up_on)}
+    </span>
+  );
 }

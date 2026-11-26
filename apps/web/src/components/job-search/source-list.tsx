@@ -6,7 +6,7 @@ export function SourceList({ sources }: { sources: JobSource[] }) {
   const disabled = sources.filter((source) => !source.enabled);
 
   return (
-    <p className="text-xs text-gray-500">
+    <p className="text-muted text-xs">
       Offers from{" "}
       {enabled.map((source, index) => (
         <span key={source.name}>
@@ -15,7 +15,7 @@ export function SourceList({ sources }: { sources: JobSource[] }) {
             href={source.url}
             target="_blank"
             rel="noopener"
-            className="underline"
+            className="hover:text-fg underline-offset-2 hover:underline"
           >
             {source.name}
           </a>
