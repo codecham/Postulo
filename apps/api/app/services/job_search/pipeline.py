@@ -43,15 +43,15 @@ def execute_run(db: Session, run: JobSearchRun, tools: SearchTools) -> None:
     run.offers_found, run.offers_new = saved.found, saved.new
     run.failed_sources = collected.failed_sources
 
-    if tools.sources and len(collected.failed_sources) == len(tools.sources):
-        finish_run(run, JobSearchRunStatus.FAILED, error="No job board could be reached")
-        db.commit()
-        return
-
+    # Even when no board answers, the offers already saved (e.g. found in the browser by
+    # the daily hunt) are embedded and matched: only the run's status tells the outage
     embed_pending_offers(db, tools.embedder)
     vector = tools.embedder.embed([build_profile_text(db, run)])[0]
     run.matches_found = match_offers(db, run.user_id, criteria, vector, tools.min_score)
-    finish_run(run, JobSearchRunStatus.SUCCEEDED)
+    if tools.sources and len(collected.failed_sources) == len(tools.sources):
+        finish_run(run, JobSearchRunStatus.FAILED, error="No job board could be reached")
+    else:
+        finish_run(run, JobSearchRunStatus.SUCCEEDED)
     db.commit()
 
 

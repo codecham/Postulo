@@ -1,0 +1,16 @@
+{
+  "email": "you@example.com",
+  "applications_per_day": 6,
+  "boards": ["linkedin", "indeed", "welcometothejungle", "ictjob", "jobat", "weworkremotely"],
+  "dossiers_dir": "~/Documents/Postulo/Candidatures",
+  "applicant": {
+    "phone": null,
+    "links": [],
+    "answers": {
+      "work_permit": "",
+      "notice_period": "",
+      "salary_expectation": "",
+      "how_did_you_hear": ""
+    }
+  }
+}

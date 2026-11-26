@@ -121,6 +121,16 @@ This project is ready for [Claude Code](https://claude.com/claude-code):
 - [.claude/skills/](.claude/skills/) contains step-by-step skills, for example `add-feature` to add a resource end to end (model, migration, API, tests, typed client, page).
 - The AI features also work for free with your Claude plan, without an API key: `/import-cv <pdf>` fills the profile from a CV, and `/tailor-application <match id>` writes a CV and a cover letter for one offer (the offer's Apply panel shows the exact command). Both copy a JSON result that you paste into the app.
 
+### Daily hunt (macOS)
+
+A routine that prepares the day's applications every weekday morning, so you only review and say go:
+
+1. `make hunt-install` (once; `at=07:30` for another time) creates your settings in `~/.config/postulo/hunt.json` (phone, links, usual form answers: personal, never in git) and a launchd job.
+2. Every morning, [scripts/hunt/daily.sh](scripts/hunt/daily.sh) starts the stack and runs `/daily-hunt` with [Claude in Chrome](https://claude.com/chrome): it reads job boards in your Chrome (LinkedIn and Indeed read only), adds the offers to Postulo with `scripts.hunt search`, writes a tailored CV and cover letter for the best matches, and saves a folder per application (PDFs + a copy of the offer) in `~/Documents/Postulo/Candidatures`. A notification tells you how many are ready and `/jobs?status=saved` opens.
+3. You review the shortlist, then run `/send-applications` and answer e.g. *go 1 3*. Claude fills and sends each approved application, then moves it to the tracking board with a follow-up reminder. Nothing is sent without that go; LinkedIn Easy Apply, logins and CAPTCHAs are left for you.
+
+The Mac must be awake (a missed run starts on wake-up) with Chrome and the Claude extension signed in. `make hunt` runs it now; logs are in `~/Library/Logs/Postulo`.
+
 Try: *"Add a notes feature: users can create, list and delete their own notes."*
 
 ## Deployment

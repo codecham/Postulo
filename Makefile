@@ -3,7 +3,7 @@
 .PHONY: help setup hooks dev up down logs ps db db-shell \
         prod-env prod-up prod-down prod-logs prod-ps backup restore \
         check check-api check-web fix test migration migrate rollback db-status \
-        api-types create-user reset
+        api-types create-user reset hunt hunt-install hunt-uninstall
 
 API := apps/api
 WEB := apps/web
@@ -109,3 +109,13 @@ api-types: ## Regenerate the frontend's typed API client after changing a route 
 create-user: ## Create a user in the running stack: make create-user email=alice@example.com
 	@test -n "$(email)" || (echo 'Missing email: make create-user email=alice@example.com' && exit 1)
 	$(COMPOSE) exec api python -m scripts.create_user "$(email)"
+
+# --- Daily hunt (macOS) ---
+hunt: ## Run the daily job hunt now (Claude in Chrome prepares today's applications)
+	@scripts/hunt/daily.sh; tail -n 20 "$$HOME/Library/Logs/Postulo/hunt-$$(date +%F).log"
+
+hunt-install: ## Run the hunt every weekday morning: make hunt-install [at=08:00]
+	@scripts/hunt/install.sh $(at)
+
+hunt-uninstall: ## Stop the daily hunt (settings are kept)
+	@scripts/hunt/install.sh --uninstall

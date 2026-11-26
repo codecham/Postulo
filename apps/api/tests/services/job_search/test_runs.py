@@ -105,3 +105,28 @@ def test_fail_stale_runs_closes_runs_left_running(db: Session) -> None:
 
     assert closed == 1
     assert run.status == JobSearchRunStatus.FAILED
+
+
+def test_request_hunt_run_queues_a_scheduled_run_without_rate_limit(db: Session) -> None:
+    user = create_user(db)
+    for _ in range(3):
+        finish(db, runs.request_manual_run(db, user.id, per_day=3))
+
+    run = runs.request_hunt_run(db, user.id)
+
+    assert run.status == JobSearchRunStatus.PENDING
+    assert run.trigger == JobSearchTrigger.SCHEDULED
+
+
+def test_request_hunt_run_gives_the_active_run(db: Session) -> None:
+    user = create_user(db)
+    active = runs.request_manual_run(db, user.id, per_day=5)
+
+    assert runs.request_hunt_run(db, user.id) == active
+
+
+def test_request_hunt_run_needs_a_searchable_profile(db: Session) -> None:
+    user = create_user(db, desired_titles=[], skills=[])
+
+    with pytest.raises(ProfileIncompleteError):
+        runs.request_hunt_run(db, user.id)
