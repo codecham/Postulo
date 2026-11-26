@@ -1,5 +1,26 @@
 import type { NextConfig } from "next";
 
+// Content Security Policy, production only: `next dev` needs eval and a websocket for
+// hot reload. Next.js inlines small scripts and styles, hence 'unsafe-inline'; every
+// other source (external scripts, frames, plugins, form targets) is blocked.
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
+const productionHeaders =
+  process.env.NODE_ENV === "production"
+    ? [{ key: "Content-Security-Policy", value: contentSecurityPolicy }]
+    : [];
+
 const nextConfig: NextConfig = {
   // Self-contained server in .next/standalone: small Docker image, no node_modules
   output: "standalone",
@@ -32,6 +53,7 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
+          ...productionHeaders,
         ],
       },
     ];

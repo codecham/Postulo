@@ -1674,6 +1674,13 @@ export interface operations {
           "application/json": components["schemas"]["UserRead"];
         };
       };
+      /** @description Registration is closed on this server */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
       /** @description Email already registered */
       409: {
         headers: {
@@ -1689,6 +1696,13 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["HTTPValidationError"];
         };
+      };
+      /** @description Too many attempts, retry later */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -1729,6 +1743,13 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["HTTPValidationError"];
         };
+      };
+      /** @description Too many attempts, retry later */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

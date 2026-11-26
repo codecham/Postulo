@@ -20,6 +20,7 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.main import app
 from app.routes.applications import get_application_writer
+from app.routes.auth import get_auth_throttle
 from app.routes.cv_imports import get_cv_extractor
 from tests.fakes import (
     FakeApplicationWriter,
@@ -79,6 +80,12 @@ def db_session(db_engine: Engine) -> Iterator[Session]:
     session.close()
     transaction.rollback()
     connection.close()
+
+
+@pytest.fixture(autouse=True)
+def reset_auth_throttle() -> None:
+    """Forget the login and sign-up attempts of the previous tests (kept in memory)."""
+    get_auth_throttle().reset()
 
 
 @pytest.fixture
