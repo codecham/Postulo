@@ -1,3 +1,5 @@
+import time
+
 import jwt
 import pytest
 from fastapi.testclient import TestClient
@@ -83,6 +85,41 @@ def test_login_returns_a_token_for_the_user(client: TestClient, db: Session) -> 
         algorithms=[settings.jwt_algorithm],
     )
     assert payload["sub"] == user_id
+
+
+def token_lifetime_seconds(body: dict[str, object]) -> int:
+    settings = get_settings()
+    payload = jwt.decode(
+        str(body["access_token"]),
+        settings.jwt_secret_key.get_secret_value(),
+        algorithms=[settings.jwt_algorithm],
+    )
+    return int(payload["exp"]) - int(time.time())
+
+
+def test_a_login_lasts_an_hour_by_default(client: TestClient, db: Session) -> None:
+    register_alice(client)
+
+    response = client.post(
+        "/auth/login", data={"username": "alice@mail.com", "password": "correct horse"}
+    )
+
+    hour = get_settings().access_token_expire_minutes * 60
+    assert response.json()["expires_in"] == hour
+    assert hour - 5 <= token_lifetime_seconds(response.json()) <= hour
+
+
+def test_remember_me_makes_the_login_last_days(client: TestClient, db: Session) -> None:
+    register_alice(client)
+
+    response = client.post(
+        "/auth/login",
+        data={"username": "alice@mail.com", "password": "correct horse", "remember_me": "true"},
+    )
+
+    days = get_settings().remember_me_expire_days * 24 * 3600
+    assert response.json()["expires_in"] == days
+    assert days - 5 <= token_lifetime_seconds(response.json()) <= days
 
 
 def test_login_rejects_a_wrong_password(client: TestClient, db: Session) -> None:

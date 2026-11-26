@@ -19,10 +19,18 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
 
 
-def create_access_token(subject: str) -> str:
+def token_lifetime(remember_me: bool) -> timedelta:
+    """How long a login lasts: short by default, longer when the user asks to stay in."""
+    settings = get_settings()
+    if remember_me:
+        return timedelta(days=settings.remember_me_expire_days)
+    return timedelta(minutes=settings.access_token_expire_minutes)
+
+
+def create_access_token(subject: str, lifetime: timedelta | None = None) -> str:
     """Create a signed JWT that identifies `subject` (the user id) until it expires."""
     settings = get_settings()
-    expires_at = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
+    expires_at = datetime.now(UTC) + (lifetime or token_lifetime(remember_me=False))
     payload = {"sub": subject, "exp": expires_at}
     return jwt.encode(
         payload,

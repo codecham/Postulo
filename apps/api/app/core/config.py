@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     jwt_secret_key: SecretStr = Field(min_length=32)
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+    # Session length when the user ticks "Keep me signed in" at login
+    remember_me_expire_days: int = Field(default=30, ge=1, le=365)
 
     # Browser origins allowed to call the API directly.
     # In .env, write it as JSON: CORS_ORIGINS=["http://localhost:3000"]
