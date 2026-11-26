@@ -2,6 +2,10 @@
 .env
 .env.*
 !.env.example
+!.env.prod.example
+
+# Database dumps (make backup): personal data, keep them off the repository
+backups/
 
 # Python
 __pycache__/

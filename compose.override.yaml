@@ -5,6 +5,8 @@
 # avoids the file-sharing layer, which can make reloading servers hang or freeze Docker.
 services:
   api:
+    build:
+      target: dev
     command: ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
     develop:
       watch:
@@ -15,6 +17,8 @@ services:
           path: ./apps/api/uv.lock
 
   worker:
+    build:
+      target: dev
     develop:
       watch:
         # The worker has no hot reload of its own: restart it after a sync

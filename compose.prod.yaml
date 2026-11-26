@@ -1,0 +1,176 @@
+# Production stack: Caddy (HTTPS) -> web (Next.js) -> api (FastAPI) -> db (PostgreSQL).
+#
+#   cp .env.prod.example .env.prod   # or `make prod-env`, then fill in DOMAIN
+#   docker compose -f compose.prod.yaml --env-file .env.prod up -d --build --wait
+#
+# Differences with compose.yaml (development):
+# - only Caddy publishes ports (80/443); the API and the database are unreachable from outside
+# - production images (no dev dependencies, no hot reload), JSON logs, docs turned off
+# - read-only containers without Linux capabilities, logs rotated, health checks everywhere
+# See DEPLOY.md for hosting options, backups and updates.
+name: postulo-prod
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+# Read-only file system, no privilege escalation, no Linux capabilities
+x-hardening: &hardening
+  read_only: true
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+  tmpfs: ["/tmp"]
+  logging: *logging
+  restart: unless-stopped
+
+x-api-environment: &api-environment
+  ENVIRONMENT: production
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  APP_NAME: ${APP_NAME:-Postulo}
+  POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env.prod}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.prod}
+  POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env.prod}
+  POSTGRES_HOST: db
+  POSTGRES_PORT: 5432
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set JWT_SECRET_KEY in .env.prod}
+  ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+  REGISTRATION_OPEN: ${REGISTRATION_OPEN:-true}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+  ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
+  # Only the Next.js server calls the API: no browser origin needs CORS
+  CORS_ORIGINS: "[]"
+
+services:
+  db:
+    image: pgvector/pgvector:pg18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    # No published port: only the containers of this stack reach the database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    # The entrypoint switches to the postgres user, so the capabilities are kept
+    security_opt: ["no-new-privileges:true"]
+    shm_size: 128mb
+    logging: *logging
+    restart: unless-stopped
+
+  # One-off job: applies the Alembic migrations, then exits
+  migrate:
+    <<: *hardening
+    build:
+      context: ./apps/api
+      target: runtime
+    image: postulo-api:latest
+    command: ["alembic", "upgrade", "head"]
+    environment: *api-environment
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *hardening
+    build:
+      context: ./apps/api
+      target: runtime
+    image: postulo-api:latest
+    environment:
+      <<: *api-environment
+      # The API is only reachable from this network: trust the client IP that the
+      # web server forwards (itself received from Caddy) for the login rate limit
+      FORWARDED_ALLOW_IPS: "*"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/db')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    <<: *hardening
+    build:
+      context: ./apps/api
+      target: runtime
+    image: postulo-api:latest
+    command: ["python", "-m", "app.worker"]
+    environment: *api-environment
+    volumes:
+      # The embedding model (~500 MB) is downloaded once and kept here
+      - models:/home/app/.cache/huggingface
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      # Unhealthy when the main loop has not turned for 30 minutes (stuck search)
+      test: ["CMD", "python", "-c", "import os, sys, time; sys.exit(time.time() - os.path.getmtime('/tmp/worker-heartbeat') > 1800)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  web:
+    <<: *hardening
+    build:
+      context: ./apps/web
+      target: runtime
+    image: postulo-web:latest
+    # Next.js writes its cache here; the uid is the image's "node" user
+    tmpfs: ["/tmp", "/app/.next/cache:uid=1000,gid=1000"]
+    environment:
+      API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env.prod}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp" # HTTP/3
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates and keys: keep them, or Let's Encrypt rate limits may apply
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["NET_BIND_SERVICE"] # listen on ports 80 and 443
+    tmpfs: ["/tmp"]
+    logging: *logging
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  models:
+  caddy_data:
+  caddy_config:

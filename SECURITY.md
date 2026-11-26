@@ -11,10 +11,16 @@ Please do not open a public issue for security problems. Email **59926750+codech
 - In the browser, the token lives in an httpOnly, SameSite=Lax cookie (Secure in production), unreadable by JavaScript.
 - Secrets are only read from the environment; `.env` is never committed and `make setup` generates new random secrets.
 - Containers run as non-root users and ports are published on `127.0.0.1` only.
-- Security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) on every page.
+- Security headers on every page (`Content-Security-Policy` in production, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) and on every API response; HSTS from the Caddy reverse proxy.
+- Brute-force protection: login attempts are limited per client IP and failed logins per email; sign-ups are limited per IP. Sign-up can be closed (`REGISTRATION_OPEN=false`).
+- Paid AI features (CV import, tailored applications) and manual job searches are limited per user.
+- Request bodies are capped (413 above the CV upload size), and every text field has a maximum length.
+- Every query on user data filters on the logged-in user; another user's id answers 404, never 403.
+- Links from job boards are kept only when they are `http(s)`; text written into PDFs is escaped.
+- In production the API docs (`/docs`, `/openapi.json`) are off, only Caddy publishes ports, and containers are read-only with no Linux capabilities.
 
 ## Not included (add them before going to production if you need them)
 
-- Rate limiting on login and sign-up (for example at the reverse proxy).
 - Email verification and password reset.
+- Rate limits shared between several API processes (the counters live in memory: run one API container, see [DEPLOY.md](DEPLOY.md)).
 - Token revocation (logging out deletes the cookie; the token itself stays valid until it expires).
