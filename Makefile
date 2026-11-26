@@ -112,7 +112,7 @@ create-user: ## Create a user in the running stack: make create-user email=alice
 
 # --- Daily hunt (macOS) ---
 hunt: ## Run the daily job hunt now (Claude in Chrome prepares today's applications)
-	@scripts/hunt/daily.sh; tail -n 20 "$$HOME/Library/Logs/Postulo/hunt-$$(date +%F).log"
+	@scripts/hunt/daily.sh
 
 hunt-install: ## Run the hunt every weekday morning: make hunt-install [at=08:00]
 	@scripts/hunt/install.sh $(at)
