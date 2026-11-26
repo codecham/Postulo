@@ -16,6 +16,7 @@ Run from the repository root:
 - `make migration m="..."` then `make migrate`: create and apply a migration after changing a model.
 - `make api-types`: regenerate `apps/web/src/lib/api/schema.d.ts` after changing any API route or schema.
 - `make dev` / `make up` / `make down`: run the stack (hot reload / background / stop).
+- `make prod-env` / `make prod-up` / `make backup`: production stack (`compose.prod.yaml`, see DEPLOY.md).
 
 Inside an app: `cd apps/api && uv run <tool>` (never `pip`; add dependencies with `uv add`), `cd apps/web && npm run <script>`.
 

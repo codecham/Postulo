@@ -22,6 +22,18 @@ def test_save_offers_stores_each_offer_once(db: Session) -> None:
     assert count_offers(db) == 2
 
 
+def test_offers_without_a_web_link_are_dropped(db: Session) -> None:
+    offers = [
+        make_collected_offer(external_id="1", url="javascript:alert(1)"),
+        make_collected_offer(external_id="2", url="https://jobs.example/2"),
+    ]
+
+    saved = save_offers(db, offers)
+
+    assert saved.new == 1
+    assert db.scalar(select(JobOffer.url)) == "https://jobs.example/2"
+
+
 def test_the_same_id_from_two_sources_is_two_offers(db: Session) -> None:
     save_offers(db, [make_collected_offer(source="a"), make_collected_offer(source="b")])
 

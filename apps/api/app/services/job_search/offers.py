@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 from sqlalchemy import select, tuple_
 from sqlalchemy.orm import Session
@@ -22,12 +23,18 @@ class SavedOffers:
 
 def save_offers(db: Session, collected: Iterable[CollectedOffer]) -> SavedOffers:
     """Insert the offers not stored yet. Known offers are left as they are."""
-    unique = {offer.key: offer for offer in collected}
+    unique = {offer.key: offer for offer in collected if is_web_url(offer.url)}
     known = _known_keys(db, list(unique))
     new_offers = [build_offer(offer) for key, offer in unique.items() if key not in known]
     db.add_all(new_offers)
     db.commit()
     return SavedOffers(found=len(unique), new=len(new_offers))
+
+
+def is_web_url(url: str) -> bool:
+    """True for an http(s) link: a job board must never put a `javascript:` URL in a page."""
+    parts = urlsplit(url.strip())
+    return parts.scheme in {"http", "https"} and bool(parts.netloc)
 
 
 def build_offer(offer: CollectedOffer) -> JobOffer:

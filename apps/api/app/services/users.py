@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password
 from app.models import User
-from app.schemas.user import UserCreate
+from app.schemas.user import PASSWORD_MAX_LENGTH, UserCreate
 
 # Hash checked when the email is unknown, so a failed login takes the same time
 # whether the account exists or not (otherwise timing reveals which emails exist)
@@ -49,6 +49,8 @@ def create_user(db: Session, data: UserCreate) -> User:
 
 def authenticate_user(db: Session, email: str, password: str) -> User | None:
     """Return the user if the email and password are correct, otherwise None."""
+    if len(password) > PASSWORD_MAX_LENGTH:
+        return None  # no account has a longer password: skip hashing a huge input
     user = get_user_by_email(db, email)
     if user is None:
         verify_password(password, _DUMMY_HASH)

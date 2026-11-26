@@ -1,12 +1,14 @@
 # Every day commands. Run `make` (or `make help`) to list them.
 .DEFAULT_GOAL := help
-.PHONY: help setup hooks dev up down logs ps prod db db-shell \
+.PHONY: help setup hooks dev up down logs ps db db-shell \
+        prod-env prod-up prod-down prod-logs prod-ps backup restore \
         check check-api check-web fix test migration migrate rollback db-status \
         api-types create-user reset
 
 API := apps/api
 WEB := apps/web
 COMPOSE := docker compose
+PROD_COMPOSE := docker compose -f compose.prod.yaml --env-file .env.prod
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2} /^# --- / {title = $$0; gsub(/^# --- | ---$$/, "", title); printf "\n\033[1m%s\033[0m\n", title}' $(MAKEFILE_LIST)
@@ -34,8 +36,29 @@ logs: ## Follow the logs of every service
 ps: ## Show the services and their health
 	$(COMPOSE) ps --all
 
-prod: ## Start a production-like stack (no hot reload, optimized builds)
-	$(COMPOSE) -f compose.yaml up --detach --build --wait
+# --- Production (see DEPLOY.md) ---
+prod-env: ## Create .env.prod with fresh secrets (then set DOMAIN in it)
+	@scripts/generate-env.sh .env.prod.example .env.prod
+
+prod-up: ## Build and start the production stack (HTTPS with Caddy)
+	@test -f .env.prod || (echo 'Missing .env.prod: run make prod-env first' && exit 1)
+	$(PROD_COMPOSE) up --detach --build --wait
+
+prod-down: ## Stop the production stack (data is kept)
+	$(PROD_COMPOSE) down
+
+prod-logs: ## Follow the production logs
+	$(PROD_COMPOSE) logs --follow
+
+prod-ps: ## Show the production services and their health
+	$(PROD_COMPOSE) ps --all
+
+backup: ## Dump the production database into backups/
+	@scripts/backup-db.sh
+
+restore: ## Restore the production database: make restore file=backups/xxx.dump
+	@test -n "$(file)" || (echo 'Missing file: make restore file=backups/postulo-....dump' && exit 1)
+	@scripts/restore-db.sh "$(file)"
 
 # --- Quality ---
 check: check-api check-web ## Run every check (lint, format, types, tests): do it before each commit

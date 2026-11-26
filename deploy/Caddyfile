@@ -1,0 +1,26 @@
+# Reverse proxy in front of the web app: HTTPS certificates (Let's Encrypt, renewed
+# automatically), HTTP -> HTTPS redirect, compression and HSTS.
+# Only the web app is exposed: the API and the database stay on the internal network.
+{
+	# Caddy's admin API is not needed in production
+	admin off
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		# Browsers only use HTTPS for this domain for a year once they have seen it
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# Caddy replaces any X-Forwarded-For sent by the client with the real client IP:
+	# the API's login rate limit counts per IP, so the header must not be spoofable
+	reverse_proxy web:3000
+
+	log {
+		output stdout
+		format json
+	}
+}

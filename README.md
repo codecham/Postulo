@@ -125,12 +125,15 @@ Try: *"Add a notes feature: users can create, list and delete their own notes."*
 
 ## Deployment
 
-`compose.yaml` alone (without the override) is production-like: optimized builds, non-root containers, no hot reload. Try it locally with `make prod`. For a real deployment:
+The production stack lives in [compose.prod.yaml](compose.prod.yaml): Caddy serves the app over HTTPS (automatic Let's Encrypt certificates) and is the only service with published ports; the API and the database stay on the internal network. Containers are read-only, without Linux capabilities, with health checks and JSON logs.
 
-- Generate new secrets for the server (`scripts/generate-env.sh` on the server, or your platform's secret manager).
-- Serve the web app over HTTPS behind a reverse proxy (the session cookie is `Secure` in production).
-- Ports are published on `127.0.0.1` only: put the reverse proxy in front of the `web` service.
-- Set `CORS_ORIGINS` only if browsers call the API directly from another origin.
+```bash
+make prod-env   # creates .env.prod with fresh secrets: set DOMAIN in it
+make prod-up    # builds and starts the stack
+make backup     # dumps the database into backups/ (restore with make restore file=...)
+```
+
+[DEPLOY.md](DEPLOY.md) covers the hosting options (free and cheap), the server setup, backups, updates and what to check before opening the app to other users.
 
 ## Troubleshooting
 

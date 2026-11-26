@@ -1,7 +1,7 @@
 # Docker Compose: the whole stack (database, migrations, API, web).
 #
 # `docker compose up` also merges compose.override.yaml (development settings).
-# For a production-like run without it: docker compose -f compose.yaml up
+# Production uses compose.prod.yaml instead (HTTPS, hardened containers): see DEPLOY.md.
 name: postulo
 
 # Environment shared by every service that runs the API code (migrate, api)
@@ -16,6 +16,7 @@ x-api-environment: &api-environment
   POSTGRES_PORT: 5432
   JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set JWT_SECRET_KEY in .env (run make setup)}
   ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+  REGISTRATION_OPEN: ${REGISTRATION_OPEN:-true}
   # Optional: an empty key disables the paid AI (CV import, tailored applications)
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   # Optional: free Adzuna keys add on-site offers (Belgium...) to the job search
@@ -44,7 +45,9 @@ services:
 
   # One-off job: applies the Alembic migrations, then exits
   migrate:
-    build: ./apps/api
+    build:
+      context: ./apps/api
+      target: runtime
     command: ["alembic", "upgrade", "head"]
     environment: *api-environment
     depends_on:
@@ -53,7 +56,9 @@ services:
     restart: "no"
 
   api:
-    build: ./apps/api
+    build:
+      context: ./apps/api
+      target: runtime
     environment: *api-environment
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
@@ -74,7 +79,9 @@ services:
 
   # Background job search: collects offers every day and scores them (app/worker.py)
   worker:
-    build: ./apps/api
+    build:
+      context: ./apps/api
+      target: runtime
     command: ["python", "-m", "app.worker"]
     environment: *api-environment
     volumes:

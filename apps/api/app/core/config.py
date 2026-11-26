@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,6 +26,9 @@ class Settings(BaseSettings):
     )
 
     app_name: str = "API"
+    # "production" turns off the interactive docs and switches logs to JSON
+    environment: Literal["development", "production"] = "development"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
     postgres_user: str
     postgres_password: SecretStr
@@ -40,6 +44,16 @@ class Settings(BaseSettings):
     # Browser origins allowed to call the API directly.
     # In .env, write it as JSON: CORS_ORIGINS=["http://localhost:3000"]
     cors_origins: list[str] = ["http://localhost:3000"]
+
+    # Anyone can create an account. Set to false for a private instance (create users
+    # with `make create-user` instead).
+    registration_open: bool = True
+    # Brute-force protection, counted per client IP and per email over a sliding window.
+    # Kept in memory: correct for one API process (see DEPLOY.md before scaling out).
+    auth_window_minutes: int = Field(default=15, gt=0)
+    login_attempts_per_ip: int = Field(default=20, gt=0)
+    failed_logins_per_email: int = Field(default=10, gt=0)
+    registrations_per_ip: int = Field(default=5, gt=0)
 
     # CV import with Claude. Without a key the app still starts: the import answers 503.
     anthropic_api_key: SecretStr | None = None
@@ -81,6 +95,15 @@ class Settings(BaseSettings):
     def empty_key_means_no_key(cls, value: object) -> object:
         # Compose passes ANTHROPIC_API_KEY="" when .env leaves it empty
         return None if value == "" else value
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
+
+    @property
+    def max_request_bytes(self) -> int:
+        """Largest request body accepted: a CV upload plus room for the multipart framing."""
+        return self.cv_import_max_bytes + 1024 * 1024
 
     @property
     def database_url(self) -> str:

@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
-# Create .env from .env.example, filling every secret with a fresh random value.
-# Never overwrites an existing .env.
+# Create an env file from its example, filling every secret with a fresh random value.
+# Never overwrites an existing file.
+#
+# Usage: scripts/generate-env.sh                                  (.env from .env.example)
+#        scripts/generate-env.sh .env.prod.example .env.prod      (production stack)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-if [[ -f .env ]]; then
-  echo "✓ .env already exists, left unchanged"
+example="${1:-.env.example}"
+target="${2:-.env}"
+
+if [[ -f "$target" ]]; then
+  echo "✓ $target already exists, left unchanged"
   exit 0
 fi
 
@@ -16,7 +22,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     POSTGRES_PASSWORD= | JWT_SECRET_KEY=) echo "${line}$(random_secret)" ;;
     *) echo "$line" ;;
   esac
-done < .env.example > .env
-chmod 600 .env
+done < "$example" > "$target"
+chmod 600 "$target"
 
-echo "✓ .env created with freshly generated secrets"
+echo "✓ $target created with freshly generated secrets"
