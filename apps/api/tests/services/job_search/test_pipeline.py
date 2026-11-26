@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models import JobSearchRun, JobSearchRunStatus
 from app.services.job_search import runs
+from app.services.job_search.offers import save_offers
 from app.services.job_search.pipeline import SearchTools, execute_run
 from tests.fakes import FakeEmbedder, FakeJobSource, make_collected_offer
 from tests.services.job_search.helpers import create_user, matches_of
@@ -57,3 +58,16 @@ def test_the_search_fails_when_no_job_board_answers(db: Session) -> None:
     assert run.status == JobSearchRunStatus.FAILED
     assert run.error == "No job board could be reached"
     assert run.finished_at is not None
+
+
+def test_saved_offers_are_still_matched_when_no_job_board_answers(db: Session) -> None:
+    run = start_run(db)
+    save_offers(db, [GOOD_OFFER])  # e.g. found in the browser by the daily hunt
+    broken = FakeJobSource(name="broken")
+    broken.fail = True
+
+    execute_run(db, run, tools(broken))
+
+    assert run.status == JobSearchRunStatus.FAILED
+    assert run.matches_found == 1
+    assert [match.offer.title for match in matches_of(db, run.user_id)] == ["Python developer"]

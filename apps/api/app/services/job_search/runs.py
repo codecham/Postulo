@@ -47,6 +47,18 @@ def request_manual_run(db: Session, user_id: uuid.UUID, per_day: int) -> JobSear
     return _queue(db, user_id, JobSearchTrigger.MANUAL)
 
 
+def request_hunt_run(db: Session, user_id: uuid.UUID) -> JobSearchRun:
+    """Queue a search for the daily hunt, or give the one already waiting or running.
+
+    Not rate limited: the hunt runs once a day, on the user's own machine.
+    """
+    profile = profiles.get_or_create_profile(db, user_id)
+    if not SearchCriteria.from_profile(profile).is_searchable:
+        raise ProfileIncompleteError
+    active = _active_run(db, user_id)
+    return active or _queue(db, user_id, JobSearchTrigger.SCHEDULED)
+
+
 def schedule_due_runs(db: Session, interval: timedelta) -> list[JobSearchRun]:
     """Queue the daily search of every user whose last search is older than `interval`."""
     due_before = datetime.now(UTC) - interval
@@ -115,13 +127,15 @@ def _active_profiles(db: Session) -> Sequence[Profile]:
 
 
 def _has_active_run(db: Session, user_id: uuid.UUID) -> bool:
-    return (
-        db.scalar(
-            select(JobSearchRun.id)
-            .where(JobSearchRun.user_id == user_id, JobSearchRun.status.in_(ACTIVE_STATUSES))
-            .limit(1)
-        )
-        is not None
+    return _active_run(db, user_id) is not None
+
+
+def _active_run(db: Session, user_id: uuid.UUID) -> JobSearchRun | None:
+    return db.scalar(
+        select(JobSearchRun)
+        .where(JobSearchRun.user_id == user_id, JobSearchRun.status.in_(ACTIVE_STATUSES))
+        .order_by(JobSearchRun.created_at)
+        .limit(1)
     )
 
 
