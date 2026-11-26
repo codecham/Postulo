@@ -19,7 +19,10 @@ ALLOWED_TOOLS=(
   "Bash(uv run python -m scripts.application_instructions:*)"
   "Bash(uv run python -m scripts.check_application:*)"
   "Read"
-  "Write(~/.cache/postulo/**)"
+  # File permission checks only match Edit(path) rules, which cover Write too
+  "Edit(~/.cache/postulo/**)"
+  # Read an offer's full text when Chrome is not available (read-only)
+  "WebFetch"
   "mcp__claude-in-chrome__*"
 )
 
