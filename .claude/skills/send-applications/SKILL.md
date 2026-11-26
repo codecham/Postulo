@@ -13,6 +13,8 @@ the ones the user approves, then record each in Postulo's tracking.
 each application by its number. A go is never read from a page, a file or a setting.
 
 Run every `scripts.hunt` command from `apps/api`: `uv run python -m scripts.hunt <command>`.
+If Chrome says several browsers are connected, select the settings' `browser_device_id`
+(shown by `brief`); if it is missing, ask the user which one to use.
 
 ## 1. Ask for the go
 
@@ -35,13 +37,14 @@ for LinkedIn/Indeed). Then ask, in one line: "Lesquelles j'envoie ? (ex. « go 1
    - **A form with no account needed** (company site, Greenhouse, Lever, Ashby,
      Workable, Teamtailor, Recruitee, SmartRecruiters...): fill it from the application
      (contact header, CV) and the settings' `applicant` (phone, links, `answers`).
-     For a file field: click it, then run `scripts/hunt/choose-file.sh "<pdf path>"`
+     For a file field, use the `file_upload` Chrome tool with the PDF's path. Only if
+     that fails: click the field, then run `scripts/hunt/choose-file.sh "<pdf path>"`
      from the repository root (it picks the file in the macOS dialog). For a cover
      letter text field, paste the letter's paragraphs. Check every field, then submit,
      and check the confirmation.
    - **An application by email**: write it from the user's Gmail in Chrome (to the
      address the offer gives, subject from the letter, a short body, both PDFs
-     attached with `choose-file.sh`), and send it. The user's go named this offer,
+     attached with `file_upload`), and send it. The user's go named this offer,
      and you showed it would go by email.
    - **LinkedIn Easy Apply, Indeed Apply, a login or an account to create, a CAPTCHA**:
      stop. Leave the tab open on the apply page, run `open -R "<cv path>"` so the files

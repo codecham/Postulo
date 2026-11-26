@@ -27,6 +27,10 @@ with the Write tool), never in the repository: they hold personal data.
   and move to the next one. Never try to get around it.
 - LinkedIn and Indeed forbid automated use: on those two, read search results and
   offers only, at most ~20 page loads per board, one page at a time, no fast loops.
+- **Browser**: when a Chrome tool says several browsers are connected, call
+  `select_browser` with the brief's `browser_device_id`. If it is null or not in
+  `list_connected_browsers`, do not pick one yourself: skip the browsing (step 2) and
+  say so in the report, with the connected browsers' names and ids.
 - Use one tab of your own (`tabs_context_mcp`, then `tabs_create_mcp`) and close it at
   the end. Leave the user's other tabs alone.
 

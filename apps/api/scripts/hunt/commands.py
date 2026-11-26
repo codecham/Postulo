@@ -49,6 +49,7 @@ def brief(ctx: Context) -> int:
             "open_to_remote_abroad": criteria.open_to_remote_abroad,
             "offer_languages": criteria.offer_languages or "any",
             "boards": ctx.settings.boards,
+            "browser_device_id": ctx.settings.browser_device_id,
             "applications_per_day": ctx.settings.applications_per_day,
         }
     )
