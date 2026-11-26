@@ -3,13 +3,13 @@
 from functools import lru_cache
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.security import create_access_token
+from app.core.security import create_access_token, token_lifetime
 from app.schemas.auth import Token
 from app.schemas.user import UserCreate, UserRead
 from app.services import users
@@ -89,7 +89,9 @@ def login(
     request: Request,
     throttle: Throttle,
     db: Annotated[Session, Depends(get_db)],
+    remember_me: Annotated[bool, Form()] = False,
 ) -> Token:
+    """Log in. `remember_me` makes the session last days instead of an hour."""
     # OAuth2 calls the field "username": we use it for the email
     try:
         throttle.check_login(client_ip(request), form.username)
@@ -105,7 +107,8 @@ def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    lifetime = token_lifetime(remember_me)
     return Token(
-        access_token=create_access_token(str(user.id)),
-        expires_in=get_settings().access_token_expire_minutes * 60,
+        access_token=create_access_token(str(user.id), lifetime),
+        expires_in=int(lifetime.total_seconds()),
     )

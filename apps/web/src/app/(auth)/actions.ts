@@ -33,12 +33,17 @@ type LoginResult = "ok" | "invalid" | "throttled";
 async function startSession(
   email: string,
   password: string,
+  rememberMe = false,
 ): Promise<LoginResult> {
   const { data, response } = await api.POST("/auth/login", {
     // OAuth2 login is a form post, and calls the email "username"
-    body: { username: email, password },
+    body: { username: email, password, remember_me: rememberMe },
     bodySerializer: (body) =>
-      new URLSearchParams(body as Record<string, string>),
+      new URLSearchParams({
+        username: body.username,
+        password: body.password,
+        remember_me: String(body.remember_me ?? false),
+      }),
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       ...(await forwardedFor()),
@@ -59,7 +64,8 @@ export async function login(
   formData: FormData,
 ): Promise<AuthFormState> {
   const { email, password } = readCredentials(formData);
-  const result = await startSession(email, password);
+  const rememberMe = formData.get("remember_me") === "on";
+  const result = await startSession(email, password, rememberMe);
   if (result === "throttled") {
     return { error: TOO_MANY_ATTEMPTS };
   }

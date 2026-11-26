@@ -64,7 +64,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Login */
+    /**
+     * Login
+     * @description Log in. `remember_me` makes the session last days instead of an hour.
+     */
     post: operations["login_auth_login_post"];
     delete?: never;
     options?: never;
@@ -619,6 +622,11 @@ export interface components {
     };
     /** Body_login_auth_login_post */
     Body_login_auth_login_post: {
+      /**
+       * Remember Me
+       * @default false
+       */
+      remember_me?: boolean;
       /** Grant Type */
       grant_type?: string | null;
       /** Username */

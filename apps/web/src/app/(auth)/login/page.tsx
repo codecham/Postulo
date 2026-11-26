@@ -26,6 +26,7 @@ export default function LoginPage() {
         action={login}
         submitLabel="Log in"
         passwordAutoComplete="current-password"
+        showRememberMe
       />
     </AuthShell>
   );
