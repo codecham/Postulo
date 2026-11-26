@@ -40,7 +40,8 @@ for LinkedIn/Indeed). Then ask, in one line: "Lesquelles j'envoie ? (ex. « go 1
      For a file field, use the `file_upload` Chrome tool with the PDF's path. Only if
      that fails: click the field, then run `scripts/hunt/choose-file.sh "<pdf path>"`
      from the repository root (it picks the file in the macOS dialog). For a cover
-     letter text field, paste the letter's paragraphs. Check every field, then submit,
+     letter text field, paste the letter's paragraphs. "How did you hear about us?":
+     the job board the offer was found on (its `board` in `ready`, e.g. "LinkedIn"). Check every field, then submit,
      and check the confirmation.
    - **An application by email**: write it from the user's Gmail in Chrome (to the
      address the offer gives, subject from the letter, a short body, both PDFs

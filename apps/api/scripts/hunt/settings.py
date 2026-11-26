@@ -29,7 +29,8 @@ class Applicant(BaseModel):
     phone: str | None = None
     links: list[str] = Field(default=[], max_length=5)  # LinkedIn, GitHub, portfolio...
     # Answers to the usual form questions, by topic: "work_permit", "notice_period",
-    # "salary_expectation", "how_did_you_hear"... Claude asks the user for the others.
+    # "salary_expectation"... Claude asks the user for the others. "How did you hear
+    # about us" is not here: it is the job board each offer was found on.
     answers: dict[str, str] = {}
 
 
