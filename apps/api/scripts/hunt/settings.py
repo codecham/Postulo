@@ -40,6 +40,9 @@ class HuntSettings(BaseModel):
     applications_per_day: int = Field(default=6, ge=1, le=15)
     boards: list[str] = DEFAULT_BOARDS
     dossiers_dir: Path = Path("~/Documents/Postulo/Candidatures")
+    # The Chrome to use when several are connected to the Claude account (its deviceId
+    # from list_connected_browsers). None: the only one connected.
+    browser_device_id: str | None = None
     applicant: Applicant = Applicant()
 
 

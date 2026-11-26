@@ -3,6 +3,7 @@
   "applications_per_day": 6,
   "boards": ["linkedin", "indeed", "welcometothejungle", "ictjob", "jobat", "weworkremotely"],
   "dossiers_dir": "~/Documents/Postulo/Candidatures",
+  "browser_device_id": null,
   "applicant": {
     "phone": null,
     "links": [],
