@@ -46,16 +46,22 @@ wait_for_docker() {
 main() {
   mkdir -p "$LOG_DIR"
   LOG="$LOG_DIR/hunt-$(date +%F).log"
-  exec >>"$LOG" 2>&1
-  echo "=== Hunt started $(date)"
+  if [[ -t 1 ]]; then
+    exec > >(tee -a "$LOG") 2>&1  # run by hand: show the progress too
+  else
+    exec >>"$LOG" 2>&1
+  fi
+  echo "=== Hunt started $(date) (log: $LOG)"
   cd "$ROOT" || fail "no repository at $ROOT"
   mkdir -p "$WORK_DIR"
   find "$WORK_DIR" -mindepth 1 -mtime +14 -delete
 
+  echo "--- Starting Docker and Postulo"
   wait_for_docker || fail "Docker did not start"
   make up || fail "Postulo did not start"
   open -g -a "Google Chrome" || fail "Google Chrome is not installed"
 
+  echo "--- Claude is browsing the job boards and writing applications (15 to 30 minutes)"
   (cd apps/api && claude -p "/daily-hunt" --chrome --allowedTools "${ALLOWED_TOOLS[@]}") \
     || fail "Claude stopped with an error"
 
